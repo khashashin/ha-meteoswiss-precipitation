@@ -44,9 +44,12 @@
             // Mock Home Assistant hass object
             const hass = {
                 config: {
-                    latitude: 46.8182, // Switzerland center
-                    longitude: 8.2275
-                }
+                    // Mock HA Location (Approx Zurich)
+                    // Comment these out to test fallback to default (Swiss Center)
+                    latitude: 47.3769,
+                    longitude: 8.5417
+                },
+                states: {}
             };
 
             // Configuration for the card

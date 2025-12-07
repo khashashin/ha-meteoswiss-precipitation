@@ -1,4 +1,4 @@
-import { LitElement, html, css, PropertyValues } from 'lit';
+import { LitElement, html, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import * as L from 'leaflet';
 import { styles } from './styles';
@@ -67,11 +67,12 @@ export class MeteoSwissRadarCard extends LitElement {
 
     protected updated(changedProperties: PropertyValues): void {
         super.updated(changedProperties);
-        if (changedProperties.has('hass') && this.hass && !this._config?.center_latitude) {
-            // Center on Home Assistant location if not configured
+        if (changedProperties.has('hass') || changedProperties.has('_config')) {
             if (this._map) {
-                const lat = this.hass.config.latitude;
-                const lng = this.hass.config.longitude;
+                const [lat, lng] = this._getCenter();
+                // Only flyTo if significant difference to avoid jitters, or rely on Leaflet to handle it.
+                // For now, simplistically setView. 
+                // Note: We might want to check if the user has manually panned, but for now enforcing center is safer to match expectation.
                 this._map.setView([lat, lng], this._config.zoom_level || 8);
             }
         }
@@ -98,8 +99,7 @@ export class MeteoSwissRadarCard extends LitElement {
             });
         }
 
-        const centerLat = this._config.center_latitude || 46.8182;
-        const centerLng = this._config.center_longitude || 8.2275;
+        const [centerLat, centerLng] = this._getCenter();
 
         this._map = L.map(this._mapContainer, {
             center: [centerLat, centerLng],
@@ -115,6 +115,21 @@ export class MeteoSwissRadarCard extends LitElement {
         setTimeout(() => {
             this._map?.invalidateSize();
         }, 100);
+    }
+
+    private _getCenter(): [number, number] {
+        // 1. Config override
+        if (this._config.center_latitude && this._config.center_longitude) {
+            return [this._config.center_latitude, this._config.center_longitude];
+        }
+
+        // 2. Home Assistant Config
+        if (this.hass && this.hass.config && this.hass.config.latitude && this.hass.config.longitude) {
+            return [this.hass.config.latitude, this.hass.config.longitude];
+        }
+
+        // 3. Default (Swiss Center - approximate)
+        return [46.8182, 8.2275];
     }
 
     private async _loadData(): Promise<void> {
