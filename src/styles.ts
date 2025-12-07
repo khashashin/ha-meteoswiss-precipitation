@@ -23,21 +23,15 @@ export const styles = css`
   
   .map-container {
     flex-grow: 1;
-    width: 100%;
-    min-height: 400px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    backdrop-filter: blur(4px);
+    color: #333;
+    padding-bottom: 4px;
   }
 
-  .controls {
+  .controls-row {
     display: flex;
     justify-content: space-between;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
-    z-index: 1000;
+    align-items: center;
+    width: 100%;
   }
   
   .controls button {

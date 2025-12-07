@@ -8,6 +8,7 @@ import { throttle } from './utils/throttle';
 
 // Types for Home Assistant
 interface HomeAssistant {
+    language: string;
     config: {
         latitude: number;
         longitude: number;
@@ -170,8 +171,7 @@ export class MeteoSwissRadarCard extends LitElement {
         const frame = this._frames[index];
 
         // Update Time Label
-        const date = new Date(frame.timestamp * 1000);
-        this._timeLabel = date.toLocaleString();
+        this._timeLabel = this._formatTime(frame.timestamp);
 
         // Fetch specific Radar JSON for this frame
         // URL in animation.json is relative: /product/output/radar/rzc/radar_rzc.2025...json
@@ -272,6 +272,19 @@ export class MeteoSwissRadarCard extends LitElement {
         }, 250);
     }
 
+    private _formatTime(timestamp: number): string {
+        const date = new Date(timestamp * 1000);
+        const lang = this.hass?.language || 'en-CH'; // Default
+        return new Intl.DateTimeFormat(lang, {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric'
+        }).format(date);
+    }
+
     private _onSliderInput(e: Event) {
         const input = e.target as HTMLInputElement;
         this._isPlaying = false; // Pause while dragging
@@ -280,8 +293,7 @@ export class MeteoSwissRadarCard extends LitElement {
 
         // Immediate UI feedback (Time Update)
         if (this._frames[index]) {
-            const date = new Date(this._frames[index].timestamp * 1000);
-            this._timeLabel = date.toLocaleString();
+            this._timeLabel = this._formatTime(this._frames[index].timestamp);
         }
 
         // Throttled Network Request
@@ -298,20 +310,22 @@ export class MeteoSwissRadarCard extends LitElement {
       <ha-card>
         <div class="card-content">
           <div class="map-container"></div>
-          <div class="time-display">${this._timeLabel}</div>
           
           <div class="controls">
-             <button @click=${this._togglePlay}>
-                ${this._isPlaying ? '⏸' : '▶'}
-             </button>
-             <input 
-                type="range" 
-                .min=${0} 
-                .max=${this._frames.length - 1} 
-                .value=${this._currentFrameIndex}
-                @input=${this._onSliderInput}
-                @change=${this._onSliderChange}
-             >
+             <div class="time-label">${this._timeLabel}</div>
+             <div class="controls-row">
+                 <button @click=${this._togglePlay}>
+                    ${this._isPlaying ? '⏸' : '▶'}
+                 </button>
+                 <input 
+                    type="range" 
+                    .min=${0} 
+                    .max=${this._frames.length - 1} 
+                    .value=${this._currentFrameIndex}
+                    @input=${this._onSliderInput}
+                    @change=${this._onSliderChange}
+                 >
+             </div>
           </div>
         </div>
       </ha-card>
