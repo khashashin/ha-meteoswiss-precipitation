@@ -7,6 +7,15 @@ import { decodeShape, MeteoSwissRadarJSON } from './utils/decoder';
 import { throttle } from './utils/throttle';
 import { SWISS_BOUNDARY_GEOJSON } from './utils/switzerland-boundary';
 
+// Register card for the card picker
+(window as any).customCards = (window as any).customCards || [];
+(window as any).customCards.push({
+    type: 'meteoswiss-radar-card',
+    name: 'MeteoSwiss Radar',
+    description: 'A responsive weather radar card for Switzerland with high-resolution masking.',
+    preview: true, // Enables preview in the picker
+});
+
 // Types for Home Assistant
 interface HomeAssistant {
     language: string;
