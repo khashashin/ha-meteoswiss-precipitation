@@ -18,7 +18,18 @@ A high-performance, interactive weather radar card for Home Assistant, featuring
 
 ## Installation
 
-### 1. Manual Installation
+### 1. HACS (Recommended)
+
+1.  Open HACS in Home Assistant.
+2.  Go to **Frontend**.
+3.  Click the **3-dot menu** in the top right -> **Custom repositories**.
+4.  Add the URL of this repository.
+5.  Select **Lovelace** as the category.
+6.  Click **Add**.
+7.  Click **Install** on the new card.
+8.  Reload your browser.
+
+### 2. Manual Installation
 
 1.  Download the `meteoswiss-radar-card.js` file from the [releases page](https://github.com/your-repo/releases) (or build it yourself using `npm run build` -> `dist/meteoswiss-radar-card.js`).
 2.  Upload the file to your Home Assistant `www` folder (e.g., `/config/www/meteoswiss-radar-card.js`).

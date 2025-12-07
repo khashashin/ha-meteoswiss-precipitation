@@ -1,0 +1,5 @@
+{
+    "name": "MeteoSwiss Radar Card",
+    "render_readme": true,
+    "filename": "dist/meteoswiss-radar-card.js"
+}
