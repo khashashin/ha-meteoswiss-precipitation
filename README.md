@@ -24,7 +24,7 @@ A high-performance, interactive weather radar card for Home Assistant, featuring
 2.  Go to **Frontend**.
 3.  Click the **3-dot menu** in the top right -> **Custom repositories**.
 4.  Add the URL of this repository.
-5.  Select **Lovelace** as the category.
+5.  Select **Lovelace** (or **Dashboard** if using HACS 2.0+) as the category.
 6.  Click **Add**.
 7.  Click **Install** on the new card.
 8.  Reload your browser.

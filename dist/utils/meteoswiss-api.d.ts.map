@@ -1,0 +1,1 @@
+{"version":3,"file":"meteoswiss-api.d.ts","sourceRoot":"","sources":["../../src/utils/meteoswiss-api.ts"],"names":[],"mappings":"AAAA,qBAAa,aAAa;IACtB,OAAO,CAAC,OAAO,CAAiE;IAGhF,OAAO,CAAC,OAAO,CAEwC;IAEjD,WAAW,IAAI,OAAO,CAAC,GAAG,CAAC;IAa3B,gBAAgB,CAAC,SAAS,EAAE,MAAM,GAAG,OAAO,CAAC,GAAG,CAAC;IAUvD,eAAe,CAAC,IAAI,EAAE,MAAM,GAAG,MAAM;CAGxC"}

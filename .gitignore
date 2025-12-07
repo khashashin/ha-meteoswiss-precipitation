@@ -1,8 +1,6 @@
 .idea/
 .vscode/
 
-dist/
-
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,webstorm,dotenv,node,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,webstorm,dotenv,node,react
 
@@ -100,7 +98,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
