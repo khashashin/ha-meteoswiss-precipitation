@@ -46,7 +46,7 @@ export class MeteoSwissRadarCard extends LitElement {
             throw new Error('Invalid configuration');
         }
         this._config = {
-            zoom_level: 8,
+            zoom_level: 12,
             ...config
         };
 
@@ -75,7 +75,7 @@ export class MeteoSwissRadarCard extends LitElement {
                 // Only flyTo if significant difference to avoid jitters, or rely on Leaflet to handle it.
                 // For now, simplistically setView. 
                 // Note: We might want to check if the user has manually panned, but for now enforcing center is safer to match expectation.
-                this._map.setView([lat, lng], this._config.zoom_level || 8);
+                this._map.setView([lat, lng], this._config.zoom_level || 12);
             }
         }
     }
@@ -105,7 +105,7 @@ export class MeteoSwissRadarCard extends LitElement {
 
         this._map = L.map(this._mapContainer, {
             center: [centerLat, centerLng],
-            zoom: this._config.zoom_level || 8,
+            zoom: this._config.zoom_level || 12,
         });
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
