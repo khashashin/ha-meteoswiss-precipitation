@@ -31,7 +31,7 @@ A high-performance, interactive weather radar card for Home Assistant, featuring
 
 ### 2. Manual Installation
 
-1.  Download the `meteoswiss-radar-card.js` file from the [releases page](https://github.com/your-repo/releases) (or build it yourself using `npm run build` -> `dist/meteoswiss-radar-card.js`).
+1.  Download the `meteoswiss-radar-card.js` file from the [releases page](https://github.com/khashashin/ha-meteoswiss-precipitation/releases) (or build it yourself using `npm run build` -> `dist/meteoswiss-radar-card.js`).
 2.  Upload the file to your Home Assistant `www` folder (e.g., `/config/www/meteoswiss-radar-card.js`).
 3.  Add the resource to your Home Assistant dashboard:
     *   Go to **Settings** > **Dashboards** > **Three Dots Icon (top right)** > **Resources**.
@@ -63,7 +63,7 @@ To build the project locally:
 
 1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/your-username/ha-meteoswiss-precipitation.git
+    git clone https://github.com/khashashin/ha-meteoswiss-precipitation.git
     cd ha-meteoswiss-precipitation
     ```
 
