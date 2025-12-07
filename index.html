@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeteoSwiss Radar Card Test</title>
+    <!-- Leaflet CSS is required -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 800px;
+            height: 600px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <meteoswiss-radar-card id="card"></meteoswiss-radar-card>
+    </div>
+
+    <script type="module" src="./dist/meteoswiss-radar-card.js"></script>
+
+    <script>
+        customElements.whenDefined('meteoswiss-radar-card').then(() => {
+            const card = document.getElementById('card');
+
+            // Mock Home Assistant hass object
+            const hass = {
+                config: {
+                    latitude: 46.8182, // Switzerland center
+                    longitude: 8.2275
+                }
+            };
+
+            // Configuration for the card
+            const config = {
+                type: 'custom:meteoswiss-radar-card',
+                card_title: 'MeteoSwiss Radar (Local Test)',
+                zoom_level: 8
+            };
+
+            // Initialize
+            card.setConfig(config);
+            card.hass = hass;
+        });
+    </script>
+
+</body>
+
+</html>

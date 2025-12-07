@@ -1,0 +1,672 @@
+<mch-product
+  editmode="false"
+  qs-state="connected"
+  type="precipitation-map"
+  slot="main"
+>
+  <div>
+    <mch-precipitation-map qs-state="connected">
+      <div>
+        <div>
+          <div class="product-with-legend-layout__container">
+            <div class="product-with-legend-layout__product-container">
+              <div class="precipitation-map__element">
+                <div class="toggle-list precipitation-map__toggle-list">
+                  <div aria-expanded="false">
+                    <button
+                      aria-label="Snow"
+                      class="button-pattern toggle-list__button"
+                    >
+                      <svg class="button__icon button__icon--normal">
+                        <use
+                          href="/static/resources/design-system-icons/icons.svg#snow"
+                        ></use>
+                      </svg>
+                    </button>
+                  </div>
+                  <div aria-expanded="false">
+                    <button
+                      aria-label="Sleet"
+                      class="button-pattern toggle-list__button"
+                    >
+                      <svg class="button__icon button__icon--normal">
+                        <use
+                          href="/static/resources/design-system-icons/icons.svg#snow-rain"
+                        ></use>
+                      </svg>
+                    </button>
+                  </div>
+                  <div aria-expanded="false">
+                    <button
+                      aria-label="Freezing rain"
+                      class="button-pattern toggle-list__button"
+                    >
+                      <svg class="button__icon button__icon--normal">
+                        <use
+                          href="/static/resources/design-system-icons/icons.svg#freezing-rain"
+                        ></use>
+                      </svg>
+                    </button>
+                  </div>
+                  <div aria-expanded="false">
+                    <button
+                      aria-label="Lightning detected"
+                      class="button-pattern button--selected toggle-list__button"
+                    >
+                      <svg class="button__icon button__icon--normal">
+                        <use
+                          href="/static/resources/design-system-icons/icons.svg#lightning"
+                        ></use>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <mch-map style="display: block">
+                  <div
+                    class="container__map maplibregl-map"
+                    style="height: 824px"
+                  >
+                    <div
+                      class="maplibregl-canvas-container maplibregl-interactive maplibregl-cooperative-gestures maplibregl-touch-drag-pan maplibregl-touch-zoom-rotate"
+                    >
+                      <canvas
+                        class="maplibregl-canvas"
+                        tabindex="0"
+                        aria-label="Map"
+                        role="region"
+                        width="1263"
+                        height="824"
+                        style="width: 1263px; height: 824px"
+                      ></canvas>
+                      <div
+                        class="maplibregl-cooperative-gesture-screen"
+                        aria-hidden="true"
+                      >
+                        <div class="maplibregl-desktop-message">
+                          Use Ctrl + scroll to zoom the map
+                        </div>
+                        <div class="maplibregl-mobile-message">
+                          Use two fingers to move the map
+                        </div>
+                      </div>
+                    </div>
+                    <div class="maplibregl-control-container">
+                      <div class="maplibregl-ctrl-top-left"></div>
+                      <div class="maplibregl-ctrl-top-right"></div>
+                      <div class="maplibregl-ctrl-bottom-left"></div>
+                      <div class="maplibregl-ctrl-bottom-right">
+                        <div class="base-controls__control-column">
+                          <style>
+                            .base-controls__button {
+                              background-color: var(
+                                --theme__color-button-background--default,
+                                var(--color-secondary-700, #263645)
+                              );
+                              border: 0;
+                              border-radius: 1px;
+                              box-shadow: var(
+                                --theme__box-shadow--default,
+                                var(
+                                  --box-shadow--meteo,
+                                  10px 10px 10px 0 rgba(0, 0, 0, 0.25)
+                                )
+                              );
+                              color: var(
+                                --theme__color-button-text--default,
+                                var(--color-white, #ffffff)
+                              );
+                              cursor: pointer;
+                              display: flex;
+                              flex-shrink: 0;
+                              font-size: 0;
+                              min-height: var(--button-size, 48px);
+                              min-width: var(--button-size, 48px);
+                              padding: 0;
+                              position: relative;
+                              pointer-events: auto;
+                            }
+
+                            .base-controls__button:hover {
+                              background-color: var(
+                                --theme__color-button-background--active,
+                                var(--color-secondary-600, #2f4356)
+                              );
+                              color: var(
+                                --theme__color-button-text--active,
+                                var(--color-secondary-100, #dfe4e9)
+                              );
+                            }
+
+                            .base-controls__button:focus {
+                              box-shadow: var(
+                                --theme__box-shadow--active,
+                                var(--box-shadow--focus, 0 0 0 3px #c4b5fd)
+                              );
+                              outline: none;
+                            }
+
+                            .base-controls__button:focus-visible {
+                              outline: var(--wb-ds-border-width--x-thick) solid
+                                var(--wb-ds-color-border--focus);
+                              outline-offset: calc(
+                                var(--wb-ds-border-width--x-thick) * -1
+                              );
+                            }
+
+                            .base-controls__button:disabled {
+                              background-color: var(
+                                --theme__color-button-background--default,
+                                var(--color-secondary-700, #263645)
+                              );
+                              color: var(
+                                --theme__color-button-text--disabled,
+                                var(--color-secondary-300, #828e9a)
+                              );
+                            }
+
+                            .base-controls__button-icon {
+                              height: var(--button-size, 48px);
+                              width: var(--button-size, 48px);
+                            }
+
+                            .base-controls__control-column {
+                              display: none;
+                            }
+
+                            @media (min-width: 768px) {
+                              .base-controls__control-column {
+                                display: flex;
+                                flex-direction: column;
+                                margin-left: auto;
+                                margin-left: var(--spacer--05, 1.25rem);
+                              }
+                            }
+
+                            .base-controls__button:not(:last-child) {
+                              margin-bottom: 3px;
+                            }
+                          </style>
+                          <button
+                            class="base-controls__button"
+                            aria-label="Zoom in"
+                          >
+                            <svg
+                              viewBox="0 0 48 48"
+                              class="base-controls__button-icon"
+                            >
+                              <path
+                                d="M9.6001 22.8H38.1314V24.3H9.6001V22.8Z"
+                                fill="currentColor"
+                              ></path>
+                              <path
+                                d="M22.7998 38.3999V9.86868H24.2998V38.3999H22.7998Z"
+                                fill="currentColor"
+                              ></path>
+                            </svg>
+                          </button>
+                          <button
+                            class="base-controls__button"
+                            aria-label="Zoom out"
+                          >
+                            <svg
+                              viewBox="0 0 48 48"
+                              class="base-controls__button-icon"
+                            >
+                              <path
+                                d="M9.6001 22.8H38.1314V24.3H9.6001V22.8Z"
+                                fill="currentColor"
+                              ></path>
+                            </svg>
+                          </button>
+                          <button
+                            class="base-controls__button"
+                            aria-label="Reset zoom"
+                          >
+                            <svg
+                              viewBox="0 0 48 48"
+                              class="base-controls__button-icon"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                clip-rule="evenodd"
+                                d="M26.2883 14L26.6574 14.1288L26.7076 14.4882L26.8719 14.3378L26.8952 14.0736L27.0703 14.2185L27.149 14.5011L27.2934 14.4193L27.484 14.5427L27.299 14.7267L27.4461 14.8989L27.4146 15.1436L27.457 15.1463L27.857 15.3121L27.9732 15.1291L27.6974 14.9969L27.6987 14.884L27.9404 14.6876L28.0314 14.9284L28.3939 15.0204L28.4188 15.1098L28.2685 15.082L28.2611 15.2464L28.4306 15.4986L28.3163 15.4762L28.6215 15.5745L29.4425 15.1702L30.3594 15.3555L31.9474 16.2725L31.9875 16.5362L32.392 16.9242L32.7883 17.1802L33.1952 16.9719L33.4798 17.3287L33.5407 17.2596L33.8968 17.4331L33.8715 17.4979L33.7778 17.6652L33.9777 18.207L33.5991 18.4187L33.3811 18.9076L33.0827 19.2238L33.3208 19.499L33.2234 19.6738L33.4504 19.8687L33.3323 20.2194L33.7228 20.3965L33.8261 20.629L33.7326 20.8072L33.8277 21.0795L33.6762 21.1244L33.6794 21.371L34.1661 21.2946L34.3893 21.4446L34.8944 21.4974L35.2218 21.731L35.1888 21.8222L35.39 21.7279L35.5101 21.798L35.6233 22.0372L35.5116 22.2173L35.5427 22.5989L35.9455 22.7933L36.2709 22.7929L36.658 23.0147L36.812 23.2957L37.0737 23.3501L37.1988 23.4946L37.5789 23.4252L37.7984 23.2246L38.2125 23.2129L38.067 23.1992L38.0139 22.9525L38.1079 22.6028L38.4111 22.6645L38.6272 22.5833L38.5557 22.3824L38.8149 21.9483L39.0803 21.8354L39.3793 22.0818L39.3737 22.2449L39.8201 22.4363L39.6601 23.6579L39.4021 23.9084L39.4464 23.9243L39.6548 24.364L39.3403 24.5406L39.4402 24.7806L39.2318 24.9971L39.369 25.4848L39.6884 25.4411L40 25.6862L39.9073 26.4012L39.7827 26.5371L39.5085 26.3578L38.7792 26.4245L38.5969 26.1921L38.3099 26.1585L38.292 25.9371L38.5973 25.6864L38.403 25.8377L38.2331 25.5543L38.0798 25.7394L37.8497 25.6812L37.4283 25.8791L37.261 26.1498L36.9202 26.5419L36.9232 27.1944L36.9151 27.5577L36.9046 27.5697L37.1713 27.7309L37.5878 27.6451L37.7453 28.017L37.5053 28.1418L37.3531 28.599L37.7775 29.1143L37.8317 29.443L37.61 29.6282L37.1483 29.7632L36.9627 29.6461L37.0267 29.3084L36.575 29.089L36.6035 28.8338L36.476 28.7177L36.5985 28.4735L36.3363 28.2097L36.1168 28.3239L35.9647 28.1977L35.1016 28.6592L34.8442 28.5168L34.7821 28.5028L34.6556 28.5961L34.6009 29.0919L34.3089 29.0163L34.022 29.173L33.4838 28.993L33.3258 29.0797L32.9821 28.4166L33.0172 28.4105L32.8515 28.3125L32.8321 27.2221L32.793 26.9933L32.452 27.4096L32.2439 27.3132L32.1207 27.0032L31.5568 27.1656L31.5048 27.5369L31.3239 27.6454L31.3346 27.7971L31.2975 27.8198L31.3741 27.8937L31.495 27.9943L31.4698 28.4028L31.6208 28.557L31.6204 28.9106L31.3139 29.4494L31.2828 29.7828L31.11 29.8253L30.8579 30.4008L30.7229 30.4232L30.77 30.4672L30.5033 30.8215L30.1927 30.9733L30.2857 31.2735L30.2168 31.5279L29.7912 31.6893L29.7247 31.891L29.8103 32.072L29.8363 32.0498L29.8801 32.2528L29.6056 32.4787L29.7851 32.5879L29.8284 32.9098L30.116 32.9752L30.3267 33.2162L30.0939 33.4656L29.9599 33.9656L29.746 34L29.6164 33.8145L29.5109 33.8749L29.342 33.7758L29.0902 33.9069L29.3192 33.5383L29.0827 33.0464L28.937 32.6196L28.7639 32.5989L28.4938 32.3366L28.1717 32.3284L28.6503 31.4499L28.2988 31.2064L28.1337 31.2773L27.9716 31.2033L27.8422 30.9993L27.6438 31.2513L27.1784 30.9996L26.9251 31.0108L26.7979 30.8058L26.8466 30.6772L26.6545 30.5945L26.353 30.0567L25.8756 29.7957L25.7188 29.7327L25.8087 29.6075L25.6112 29.2564L25.8509 28.9059L25.8443 27.7134L25.8257 27.7232L25.6968 27.5922L25.3808 27.6907L25.0858 27.7289L24.5707 28.1494L24.6589 28.2027L24.7612 28.2561L24.7352 28.4488L24.3945 28.6015L24.385 28.784L24.144 28.8785L24.0219 29.2453L23.6838 29.2841L23.5397 29.2042L23.1581 29.5893L23.3117 29.7385L23.7197 30.4377L23.6273 30.8169L23.416 30.9096L23.3029 31.1377L22.7989 31.2461L22.723 31.5307L22.8041 31.8055L22.4916 32.299L21.9156 32.2914L21.7088 32.5409L21.6167 33.0966L21.3084 33.0036L21.1415 33.0892L20.7766 32.865L20.5772 33.0397L20.4793 32.7667L20.2022 32.5307L19.644 32.5692L19.5484 32.4066L19.2026 32.4682L19.1423 32.6922L18.8292 32.7031L18.1312 33.3009L17.8093 33.121L17.5998 33.1508L17.4226 33.0375L17.1762 33.3475L16.8719 33.3813L16.6749 33.6717L16.4355 33.4698L16.0302 33.6593L15.6441 33.0273L15.5841 32.7157L15.3959 32.5403L15.624 32.3967L15.494 32.4371L15.2239 32.2028L14.8583 31.5912L14.5339 31.8265L14.4353 31.6379L14.5554 31.4914L14.613 31.0154L14.6741 30.9633L13.9778 30.8352L13.9085 30.5995L14.0574 30.371L14.0048 30.1548L14.1332 29.8695L14.3675 29.6327L14.3942 29.2691L13.8757 28.8389L13.7752 28.5889L14.007 28.4042L14.023 28.239L14.4203 28.267L14.8646 28.1936L14.8696 28.1933L14.8537 27.9946L14.2309 27.5861L14.2131 27.4775L12.5435 26.979L12.2167 27.0763L11.9522 27.0053L11.6265 27.3651L11.1663 27.5526L11.3019 27.1263L11.1873 27.4682L10.8225 27.5291L10.4285 27.9084L10.3023 28.2218L10.1433 28.2409L9.82736 28.6519L9.41374 29.6579L9.35035 30.0775L9.48408 30.0478L10.0677 29.105L10.0228 29.3807L10.1817 29.6274L10.4118 29.5052L10.523 29.7031L10.416 29.8854L9.90163 30.1271L9.34671 30.6699L8.67036 30.6044L8.55783 30.7666L8.26353 30.6706L8 30.8114L8.28082 30.2828L8.06715 30.1229L8.13518 29.9643L8.56654 29.73L8.64402 29.7945L8.94184 29.6559L9.04516 29.7446L9.20808 29.6061L9.06814 29.2802L9.55008 28.454L9.51138 28.2932L9.4748 28.3313L8.82062 27.9483L8.97336 27.6733L8.90274 27.4393L9.48445 26.6607L9.16634 26.3416L10.3854 25.2158L11.4386 24.5646L11.7601 24.2248L11.4764 24.1174L11.6962 23.2302L11.478 22.8422L11.9337 22.3874L11.9942 22.4734L12.7829 22.2209L13.1303 21.8274L13.4364 21.8398L13.2306 21.7788L13.4995 21.6256L13.3144 21.466L13.4731 21.2598L13.6692 21.2215L13.6527 21.0617L14.3594 20.436L15.1561 19.7126L15.1053 19.2401L15.4449 19.1872L15.5378 18.9036L15.8621 18.806L15.905 18.7117L15.592 18.4226L14.6351 18.6196L14.8762 18.0981L15.0494 18.0783L15.0679 17.8048L15.4884 17.5952L15.3841 17.2129L15.5647 17.1149L15.9948 17.253L16.3773 17.1096L16.6001 17.2425L16.8752 17.2119L16.6663 17.7057L17.0771 17.754L17.1787 17.8924L17.4091 17.8441L17.7651 17.7397L18.1492 17.8191L18.3898 17.6947L18.6322 17.4303L18.3939 17.3428L18.4638 17.2001L18.7771 17.3495L18.949 17.2462L18.9687 17.0085L19.1507 16.8675L18.9527 16.8593L18.9352 16.7506L19.376 16.3873L19.5262 16.3876L19.5561 16.2432L19.7806 16.3717L19.9519 16.1743L20.2563 16.1611L20.1347 16.2833L20.2253 16.4894L19.8814 16.5438L20.1434 16.8091L20.4058 16.7567L20.9818 16.5657L21.1549 16.268L21.6378 16.2615L21.7697 16.6084L21.9969 16.692L22.1112 16.5589L22.5476 16.6279L22.8744 16.4932L23.0327 16.5323L23.1203 16.3333L23.5416 16.177L23.7714 15.9281L23.9005 15.9369L23.9503 16.0759L24.0381 15.993L24.4021 16.023L24.4576 16.2273L24.6755 16.4046L25.0529 16.4489L25.1519 16.3393L25.4051 16.4394L25.8056 16.2941L25.63 16.2633L25.5503 16.0929L25.9025 15.925L25.9882 15.7461L26.116 15.7813L26.3547 15.9705L26.3108 16.1153L26.5096 16.0291L26.5062 15.6577L26.578 15.565L26.6458 15.7065L26.7305 15.5794L26.5736 15.3949L26.5851 15.3664L26.3933 15.4622L26.2094 15.3993L26.0349 15.4863L26.0483 15.6361L25.6699 15.6062L25.6382 15.7084L25.6064 15.5372L25.2186 15.4111L25.2833 15.2688L25.183 15.1169L25.5054 14.8701L25.5286 14.6143L25.73 14.3749L26.3526 14.2624L26.2883 14Z"
+                                fill="currentColor"
+                              ></path>
+                            </svg>
+                          </button>
+                        </div>
+                        <details
+                          class="maplibregl-ctrl maplibregl-ctrl-attrib"
+                          open=""
+                        >
+                          <summary
+                            class="maplibregl-ctrl-attrib-button"
+                            title="Toggle attribution"
+                            aria-label="Toggle attribution"
+                          ></summary>
+                          <div class="maplibregl-ctrl-attrib-inner">
+                            <a
+                              href="https://www.swisstopo.ch/"
+                              target="_blank"
+                              rel="nofollow noopener"
+                              >© swisstopo</a
+                            >,
+                            <a
+                              href="https://www.maptiler.com/copyright"
+                              target="_blank"
+                              rel="nofollow noopener"
+                              >© MapTiler</a
+                            >,
+                            <a
+                              href="https://www.openstreetmap.org/copyright"
+                              target="_blank"
+                              rel="nofollow noopener"
+                              >© OpenStreetMap contributors</a
+                            >
+                          </div>
+                        </details>
+                      </div>
+                    </div>
+                  </div>
+                </mch-map>
+              </div>
+              <div class="product-with-legend-layout__time-slider">
+                <div class="time-slider">
+                  <div class="time-slider__current-position">
+                    <div
+                      class="time-slider__current-position-box time-slider__current-position-box--measurement"
+                    >
+                      Measurement: Tuesday, 03:00
+                    </div>
+                  </div>
+                  <div class="time-slider__wrapper">
+                    <div class="time-slider__controls-left">
+                      <button class="button-pattern time-slider__play-button">
+                        <svg class="button__icon button__icon--large">
+                          <use
+                            href="/static/resources/design-system-icons/icons.svg#Play"
+                          ></use>
+                        </svg>
+                      </button>
+                      <button
+                        class="button-pattern time-slider__select-previous-button"
+                      >
+                        <svg class="button__icon button__icon--large">
+                          <use
+                            href="/static/resources/design-system-icons/icons.svg#ChevronLeft"
+                          ></use>
+                        </svg>
+                      </button>
+                    </div>
+                    <div class="time-slider__drag-container">
+                      <div class="drag-container" tabindex="0">
+                        <div class="time-slider__time-range">
+                          <!-- Bunch of svg elements - removed for brevity -->
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      class="button-pattern time-slider__select-next-button"
+                    >
+                      <svg class="button__icon button__icon--large">
+                        <use
+                          href="/static/resources/design-system-icons/icons.svg#ChevronRight"
+                        ></use>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="product-with-legend-layout__legend-container">
+              <div class="product-with-legend-layout__legend">
+                <div class="legend">
+                  <div class="legend__reduced">
+                    <div class="reduced-legend">
+                      <div class="reduced-legend__color-box-legend">
+                        <div class="reduced-legend__color-box-container">
+                          <div
+                            class="reduced-legend__color-box"
+                            style="background-color: rgb(172, 0, 219)"
+                          ></div>
+                          <div class="reduced-legend__color-box-label--short">
+                            60
+                          </div>
+                          <div class="reduced-legend__color-box-label--unit">
+                            mm/h
+                          </div>
+                        </div>
+                        <div class="reduced-legend__color-box-container">
+                          <div
+                            class="reduced-legend__color-box"
+                            style="background-color: rgb(247, 12, 0)"
+                          ></div>
+                          <div class="reduced-legend__color-box-label--short">
+                            40
+                          </div>
+                        </div>
+                        <div class="reduced-legend__color-box-container">
+                          <div
+                            class="reduced-legend__color-box"
+                            style="background-color: rgb(248, 124, 0)"
+                          ></div>
+                          <div class="reduced-legend__color-box-label--short">
+                            20
+                          </div>
+                        </div>
+                        <div class="reduced-legend__color-box-container">
+                          <div
+                            class="reduced-legend__color-box"
+                            style="background-color: rgb(250, 202, 30)"
+                          ></div>
+                          <div class="reduced-legend__color-box-label--short">
+                            10
+                          </div>
+                        </div>
+                        <div class="reduced-legend__color-box-container">
+                          <div
+                            class="reduced-legend__color-box"
+                            style="background-color: rgb(252, 255, 45)"
+                          ></div>
+                          <div class="reduced-legend__color-box-label--short">
+                            6
+                          </div>
+                        </div>
+                        <div class="reduced-legend__color-box-container">
+                          <div
+                            class="reduced-legend__color-box"
+                            style="background-color: rgb(73, 255, 54)"
+                          ></div>
+                          <div class="reduced-legend__color-box-label--short">
+                            4
+                          </div>
+                        </div>
+                        <div class="reduced-legend__color-box-container">
+                          <div
+                            class="reduced-legend__color-box"
+                            style="background-color: rgb(42, 147, 59)"
+                          ></div>
+                          <div class="reduced-legend__color-box-label--short">
+                            2
+                          </div>
+                        </div>
+                        <div class="reduced-legend__color-box-container">
+                          <div
+                            class="reduced-legend__color-box"
+                            style="background-color: rgb(42, 0, 250)"
+                          ></div>
+                          <div class="reduced-legend__color-box-label--short">
+                            1
+                          </div>
+                        </div>
+                        <div class="reduced-legend__color-box-container">
+                          <div
+                            class="reduced-legend__color-box"
+                            style="background-color: rgb(158, 132, 154)"
+                          ></div>
+                          <div class="reduced-legend__color-box-label--short">
+                            0.2
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="legend__full">
+                    <div class="legend-container">
+                      <div class="legend-container__header">
+                        <h4 class="legend-container__title">Legend</h4>
+                      </div>
+                      <div
+                        class="legend-container__body legend-container__body--mobile-1-column legend-container__body--tablet-2-columns legend-container__body--desktop-1-column"
+                      >
+                        <div class="legend-container__column">
+                          <div>
+                            <b>Total precipitation in mm per hour</b>
+                            <div>
+                              Corresponds to 1 mm precipitation 1 litre of water
+                              per square meter.
+                            </div>
+                          </div>
+                          <div>
+                            <div>
+                              Typically, red or purple areas characterize
+                              intense thunderstorms, while hail zones are
+                              associated with purple ones.
+                            </div>
+                          </div>
+                          <div class="legend-listing">
+                            <div>Intensity of precipitation</div>
+                            <ul class="legend-listing__list">
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(172, 0, 219);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                ></div>
+                                <div>more than 60 mm/h</div>
+                              </li>
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(247, 12, 0);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                ></div>
+                                <div>40 to 60 mm/h</div>
+                              </li>
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(248, 124, 0);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                ></div>
+                                <div>20 to 40 mm/h</div>
+                              </li>
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(250, 202, 30);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                ></div>
+                                <div>10 to 20 mm/h</div>
+                              </li>
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(252, 255, 45);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                ></div>
+                                <div>6 to 10 mm/h</div>
+                              </li>
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(73, 255, 54);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                ></div>
+                                <div>4 to 6 mm/h</div>
+                              </li>
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(42, 147, 59);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                ></div>
+                                <div>2 to 4 mm/h</div>
+                              </li>
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(42, 0, 250);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                ></div>
+                                <div>1 to 2 mm/h</div>
+                              </li>
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(158, 132, 154);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                ></div>
+                                <div>0.2 to 1 mm/h</div>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                        <div class="legend-container__column">
+                          <div>
+                            <div>
+                              The weather radar network provides a detailed
+                              snapshot of rainfall over Switzerland and
+                              neighboring countries and therefore forms an
+                              essential basis for flood and storm warnings.
+                              Intense thunderstorms generally occur in the red
+                              or purple regions, hail in the purple regions. The
+                              forecast on the animation is based on measured
+                              values as well as on model forecasts.
+                            </div>
+                          </div>
+                          <div class="legend-listing">
+                            <div>Precipitation type</div>
+                            <ul class="legend-listing__list">
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(107, 234, 255);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                >
+                                  <svg class="icon__icon">
+                                    <use
+                                      href="/static/resources/design-system-icons/icons.svg#snow-rain"
+                                    ></use>
+                                  </svg>
+                                </div>
+                                <div>Sleet</div>
+                              </li>
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(193, 221, 220);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                >
+                                  <svg class="icon__icon">
+                                    <use
+                                      href="/static/resources/design-system-icons/icons.svg#snow"
+                                    ></use>
+                                  </svg>
+                                </div>
+                                <div>Snow</div>
+                              </li>
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small"
+                                  aria-hidden="true"
+                                  style="
+                                    background: rgb(135, 200, 255);
+                                    color: var(--wb-ds-color-gray--default);
+                                  "
+                                >
+                                  <svg class="icon__icon">
+                                    <use
+                                      href="/static/resources/design-system-icons/icons.svg#freezing-rain"
+                                    ></use>
+                                  </svg>
+                                </div>
+                                <div>Freezing rain</div>
+                              </li>
+                            </ul>
+                          </div>
+                          <div class="legend-listing">
+                            <div>Lightning</div>
+                            <ul class="legend-listing__list">
+                              <li class="legend-listing__list-item">
+                                <div
+                                  class="icon legend-listing__list-item-color-box icon--small icon--bordered"
+                                  aria-hidden="true"
+                                  style="
+                                    background: transparent;
+                                    color: rgb(255, 255, 0);
+                                  "
+                                >
+                                  <svg class="icon__icon">
+                                    <use
+                                      href="/static/resources/design-system-icons/icons.svg#lightning"
+                                    ></use>
+                                  </svg>
+                                </div>
+                                <div>Lightning detected</div>
+                              </li>
+                            </ul>
+                          </div>
+                          <div>
+                            <b>Background information:</b>
+                            <mch-text
+                              qs-state="connected"
+                              html='&lt;a target="_blank" href="https://www.meteoswiss.admin.ch/weather/measurement-systems/atmosphere/weather-radar-network.html"&gt;Weather Radar Network&lt;/a&gt;'
+                            ></mch-text>
+                            <mch-text
+                              qs-state="connected"
+                              html='&lt;a target="_blank" href="https://www.meteoswiss.admin.ch/weather/warning-and-forecasting-systems/nowcasting.html"&gt;Nowcasting&lt;/a&gt;'
+                            ></mch-text>
+                            <mch-text
+                              qs-state="connected"
+                              html='&lt;a target="_blank" href="https://www.meteoswiss.admin.ch/weather/warning-and-forecasting-systems/icon-forecasting-systems.html"&gt;ICON Forecasting Systems&lt;/a&gt;'
+                            ></mch-text>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    class="button-pattern button--flat legend__expansion-trigger"
+                  >
+                    <svg class="button__icon button__icon--normal">
+                      <use
+                        href="/static/resources/design-system-icons/icons.svg#ChevronDown"
+                      ></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="updated-on product-with-legend-layout__updated-on">
+            Updated on 09.12.2025, 03:24
+          </div>
+        </div>
+      </div>
+    </mch-precipitation-map>
+  </div>
+</mch-product>

@@ -1,0 +1,266 @@
+curl 'https://www.meteoswiss.admin.ch/product/output/radar/rzc/radar_rzc.20251209_0200.json' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,de-CH;q=0.8,de;q=0.7,ru-RU;q=0.6,ru;q=0.5' \
+  -H 'cache-control: no-cache' \
+  -b '_ga_KPF7TQ1BJY=GS1.1.1738232653.1.1.1738232802.0.0.0; _ga_59R4EB0KYN=GS2.1.s1750890645$o1$g1$t1750890664$j41$l0$h0; _ga_SY487S5SWP=GS2.1.s1751495030$o7$g0$t1751495030$j60$l0$h0; _ga=GA1.1.863850099.1737919781; _ga_SCXQ4XPN65=GS2.1.s1758715448$o3$g1$t1758715867$j57$l0$h0; _pk_id.1.c149=79449b5212b64d34.1764787942.; _pk_ses.1.c149=1' \
+  -H 'dnt: 1' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://www.meteoswiss.admin.ch/services-and-publications/applications/precipitation.html' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
+
+{
+    "coords": {
+        "system": "LV95",
+        "x_min": 255.5,
+        "x_max": 964.5,
+        "x_count": 710,
+        "y_min": -159.5,
+        "y_max": 479.5,
+        "y_count": 640
+    },
+    "areas": [
+        {
+            "color": "9e849a",
+            "shapes": [
+                [
+                    {
+                        "i": 371,
+                        "j": 950,
+                        "d": "NLNLNLNNNNNNLNKMKM",
+                        "o": "4499045555",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 659,
+                        "j": 108,
+                        "d": "NLNLNLOMNNMOLNKMKM",
+                        "o": "0000099999",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 661,
+                        "j": 204,
+                        "d": "NLOMNLNLNNMOLNKMLNLNLL",
+                        "o": "664454579855",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 663,
+                        "j": 208,
+                        "d": "NLNNLN",
+                        "o": "2065",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 665,
+                        "j": 104,
+                        "d": "NLNLNLOMOMNNLNLNLNKMKM",
+                        "o": "000000999999",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 765,
+                        "j": 320,
+                        "d": "NLNNLN",
+                        "o": "9900",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 809,
+                        "j": 380,
+                        "d": "NLNNNNNNLNKMLL",
+                        "o": "77443327",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 855,
+                        "j": 170,
+                        "d": "NLNLNLOMNNNNNNLNKMKMKM",
+                        "o": "336663366446",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 863,
+                        "j": 222,
+                        "d": "NLNNLN",
+                        "o": "4653",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 863,
+                        "j": 228,
+                        "d": "NLNNLN",
+                        "o": "9900",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 891,
+                        "j": 230,
+                        "d": "NLNNLN",
+                        "o": "7622",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 895,
+                        "j": 246,
+                        "d": "NLOMOMOMOMNNLNKMKMKMKM",
+                        "o": "353244566779",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 905,
+                        "j": 204,
+                        "d": "NLOMOMNNLNKMKM",
+                        "o": "99982503",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 919,
+                        "j": 226,
+                        "d": "NLNNLN",
+                        "o": "8811",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 943,
+                        "j": 272,
+                        "d": "NLNNNNOMNNLNKMKMLL",
+                        "o": "5568820009",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 951,
+                        "j": 276,
+                        "d": "NLNNLN",
+                        "o": "9900",
+                        "l": 0
+                    }
+                ],
+                [
+                    {
+                        "i": 953,
+                        "j": 272,
+                        "d": "NLOMNNMOMOLNLLLLLL",
+                        "o": "6772500944",
+                        "l": 0
+                    }
+                ]
+            ]
+        },
+        {
+            "color": "fcff2d",
+            "shapes": [
+                [
+                    {
+                        "i": 659,
+                        "j": 108,
+                        "d": "NLNLNLOMNNMOLNKMKM",
+                        "o": "2222188887",
+                        "l": 1
+                    }
+                ],
+                [
+                    {
+                        "i": 665,
+                        "j": 104,
+                        "d": "NLNLNLOMOMNNLNLNLNKMKM",
+                        "o": "228821887787",
+                        "l": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "color": "f87c00",
+            "shapes": [
+                [
+                    {
+                        "i": 659,
+                        "j": 108,
+                        "d": "NLNLNLOMNNMOLNKMKM",
+                        "o": "9988546640",
+                        "l": 2
+                    }
+                ],
+                [
+                    {
+                        "i": 665,
+                        "j": 104,
+                        "d": "NLOMNLNLOMNNLNLNLNKMKM",
+                        "o": "992673662260",
+                        "l": 2
+                    }
+                ]
+            ]
+        },
+        {
+            "color": "f70c00",
+            "shapes": [
+                [
+                    {
+                        "i": 663,
+                        "j": 108,
+                        "d": "NLNNLN",
+                        "o": "2122",
+                        "l": 3
+                    }
+                ],
+                [
+                    {
+                        "i": 667,
+                        "j": 104,
+                        "d": "NLNNLN",
+                        "o": "5652",
+                        "l": 3
+                    }
+                ],
+                [
+                    {
+                        "i": 671,
+                        "j": 102,
+                        "d": "NLNNLN",
+                        "o": "4722",
+                        "l": 3
+                    }
+                ]
+            ]
+        }
+    ]
+}
