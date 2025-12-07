@@ -3,7 +3,7 @@ import { css } from 'lit';
 export const styles = css`
   :host {
     display: block;
-    height: 100%; /* Ensure host takes height */
+    height: 100%;
   }
   
   ha-card {
@@ -11,18 +11,42 @@ export const styles = css`
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: white; /* Ensure visible background */
+    background: white; 
   }
   
   .card-content {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    height: 400px; /* Fallback height */
+    height: 100%;
+    padding: 0; /* Remove default padding if needed, or keep it */
   }
   
   .map-container {
     flex-grow: 1;
+    width: 100%;
+    /* Remove fixed min-height if we want it to shrink, or keep small min-height */
+    min-height: 200px; 
+    position: relative;
+    z-index: 0;
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+    gap: 4px;
+    /* Ensure controls stay at bottom and don't shrink */
+    flex-shrink: 0; 
+  }
+
+  .time-label {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
     color: #333;
     padding-bottom: 4px;
   }
@@ -65,12 +89,11 @@ export const styles = css`
     padding: 4px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
+    cursor: pointer;
   }
 
   .controls input:focus {
+    outline: none;
     border-color: #1976d2;
   }
   
@@ -87,6 +110,7 @@ export const styles = css`
       display: flex;
       flex-direction: column;
       gap: 4px;
+      pointer-events: none; /* Let clicks pass through if needed, though usually legend is interactive */
   }
   
   .legend-item {
@@ -105,6 +129,6 @@ export const styles = css`
   .leaflet-container {
     height: 100%;
     width: 100%;
-    border-radius: 8px;
+    background: #f0f0f0; /* Fallback color */
   }
 `;

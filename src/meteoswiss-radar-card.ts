@@ -5,6 +5,7 @@ import { styles } from './styles';
 import { MeteoSwissAPI } from './utils/meteoswiss-api';
 import { decodeShape, MeteoSwissRadarJSON } from './utils/decoder';
 import { throttle } from './utils/throttle';
+import { SWISS_BOUNDARY_GEOJSON } from './utils/switzerland-boundary';
 
 // Types for Home Assistant
 interface HomeAssistant {
@@ -103,15 +104,51 @@ export class MeteoSwissRadarCard extends LitElement {
 
         const [centerLat, centerLng] = this._getCenter();
 
+        // 1. Initialize Map with Constraints
         this._map = L.map(this._mapContainer, {
             center: [centerLat, centerLng],
             zoom: this._config.zoom_level || 12,
+            minZoom: 7,
+            maxZoom: 21,
+            maxBounds: [
+                [45.3, 5.0], // Southwest (padding around CH)
+                [48.3, 11.0] // Northeast
+            ],
+            maxBoundsViscosity: 1.0
         });
 
+        // 2. Base Layer
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap &copy; CARTO',
             subdomains: 'abcd',
-            maxZoom: 19
+            maxZoom: 21
+        }).addTo(this._map);
+
+        // 3. Add Inverse Mask (Grey out non-Swiss areas)
+        // Note: SWISS_BOUNDARY_COORDINATES is Array<Ring>, where Ring is Array<[Lng, Lat]>
+        // Note: SWISS_BOUNDARY_GEOJSON is a FeatureCollection. We take the first feature's polygon.
+        const coordinates = SWISS_BOUNDARY_GEOJSON.features[0].geometry.coordinates;
+
+        // coordinates is Array<Ring>, where Ring is Array<[Lng, Lat]>
+        const swissRings = coordinates.map(ring =>
+            ring.map(pt => [pt[1], pt[0]] as [number, number])
+        );
+
+        // World Polygon (Outer)
+        const worldCoords = [
+            [90, -180],
+            [90, 180],
+            [-90, 180],
+            [-90, -180]
+        ] as [number, number][];
+
+        // Create Polygon with hole (Leaflet takes arrays of coordinates: [OuterRing, InnerHole1, ...])
+        // We cast to any to avoid TypeScript limitations with complex nested arrays in Leaflet typings
+        L.polygon([worldCoords, ...swissRings] as any, {
+            color: 'transparent',
+            fillColor: '#888888',
+            fillOpacity: 0.5,
+            interactive: false // Click-through
         }).addTo(this._map);
 
         setTimeout(() => {
