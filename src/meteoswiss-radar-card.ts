@@ -4,6 +4,7 @@ import * as L from 'leaflet';
 import { styles } from './styles';
 import { MeteoSwissAPI } from './utils/meteoswiss-api';
 import { decodeShape, MeteoSwissRadarJSON } from './utils/decoder';
+import { throttle } from './utils/throttle';
 
 // Types for Home Assistant
 interface HomeAssistant {
@@ -261,32 +262,56 @@ export class MeteoSwissRadarCard extends LitElement {
         this._isPlaying = !this._isPlaying;
     }
 
+    private _throttledRenderFrame: (index: number) => void;
+
+    constructor() {
+        super();
+        // Initialize throttled function (250ms limit)
+        this._throttledRenderFrame = throttle((index: number) => {
+            this._renderFrame(index);
+        }, 250);
+    }
+
+    private _onSliderInput(e: Event) {
+        const input = e.target as HTMLInputElement;
+        this._isPlaying = false; // Pause while dragging
+        const index = parseInt(input.value);
+        this._currentFrameIndex = index;
+
+        // Immediate UI feedback (Time Update)
+        if (this._frames[index]) {
+            const date = new Date(this._frames[index].timestamp * 1000);
+            this._timeLabel = date.toLocaleString();
+        }
+
+        // Throttled Network Request
+        this._throttledRenderFrame(index);
+    }
+
+    private _onSliderChange(e: Event) {
+        // Optional: Resume playing if it was playing before? 
+        // For now, keep it paused to let user examine the frame.
+    }
+
     render() {
         return html`
       <ha-card>
-        ${this._config?.card_title ? html`<div class="card-header">${this._config.card_title}</div>` : ''}
         <div class="card-content">
           <div class="map-container"></div>
           <div class="time-display">${this._timeLabel}</div>
           
           <div class="controls">
-             <button @click=${() => {
-                this._isPlaying = false;
-                this._currentFrameIndex = (this._currentFrameIndex - 1 + this._frames.length) % this._frames.length;
-                this._renderFrame(this._currentFrameIndex);
-            }}>
-                ⏮
-             </button>
              <button @click=${this._togglePlay}>
                 ${this._isPlaying ? '⏸' : '▶'}
              </button>
-             <button @click=${() => {
-                this._isPlaying = false;
-                this._currentFrameIndex = (this._currentFrameIndex + 1) % this._frames.length;
-                this._renderFrame(this._currentFrameIndex);
-            }}>
-                ⏭
-             </button>
+             <input 
+                type="range" 
+                .min=${0} 
+                .max=${this._frames.length - 1} 
+                .value=${this._currentFrameIndex}
+                @input=${this._onSliderInput}
+                @change=${this._onSliderChange}
+             >
           </div>
         </div>
       </ha-card>

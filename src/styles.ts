@@ -14,15 +14,7 @@ export const styles = css`
     background: white; /* Ensure visible background */
   }
   
-  .card-header {
-    padding: 16px 16px 0 16px;
-    font-size: 1.2em;
-    font-weight: 500;
-    color: black; /* Visibility */
-  }
-  
   .card-content {
-    padding: 16px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -33,38 +25,19 @@ export const styles = css`
     flex-grow: 1;
     width: 100%;
     min-height: 400px;
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .time-display {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    pointer-events: none;
-  }
-  
-  .controls {
-    position: absolute;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%); /* Center horizontally */
-    z-index: 1000;
-    display: flex;
-    gap: 12px;
-    background: rgba(255, 255, 255, 0.95);
     padding: 8px 16px;
     border-radius: 20px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     backdrop-filter: blur(4px);
+  }
+
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
   }
   
   .controls button {
@@ -90,6 +63,21 @@ export const styles = css`
 
   .controls button.active {
     color: #1976d2;
+  }
+
+  .controls input {
+    flex-grow: 1;
+    margin: 0 8px;
+    padding: 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .controls input:focus {
+    border-color: #1976d2;
   }
   
   .map-legend {

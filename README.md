@@ -241,14 +241,7 @@ export class MeteoSwissRadarCard extends LitElement {
         overflow: hidden;
       }
       
-      .card-header {
-        padding: 16px 16px 0 16px;
-        font-size: 1.2em;
-        font-weight: 500;
-      }
-      
       .card-content {
-        padding: 16px;
         height: calc(100% - 52px);
       }
       
@@ -530,9 +523,6 @@ export class MeteoSwissRadarCard extends LitElement {
 
     return html`
       <ha-card>
-        ${this._config.card_title
-          ? html`<div class="card-header">${this._config.card_title}</div>`
-          : ''}
         <div class="card-content">
           <div class="map-container">
             <div class="time-display">
