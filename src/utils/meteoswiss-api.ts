@@ -1,23 +1,14 @@
 export class MeteoSwissAPI {
-    private isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    // Use Home Assistant's backend proxy for all requests
+    // This integration provides /api/meteoswiss/* endpoint that proxies to MeteoSwiss
+    private readonly HA_PROXY_BASE = '/api/meteoswiss';
 
-    // Base URL for MeteoSwiss API
-    private readonly METEOSWISS_BASE = 'https://www.meteoswiss.admin.ch/product/output';
+    private async fetchViaHAProxy(path: string): Promise<Response> {
+        // Remove leading slash if present
+        const cleanPath = path.startsWith('/') ? path.substring(1) : path;
 
-    // Public CORS proxy - can be configured
-    private readonly CORS_PROXY = 'https://corsproxy.io/?';
-
-    private async fetchWithCorsProxy(url: string): Promise<Response> {
-        // Try direct fetch first (works in local dev with proxy)
-        if (this.isLocal) {
-            return fetch(url.replace(this.METEOSWISS_BASE, '/product/output'), {
-                cache: 'no-cache'
-            });
-        }
-
-        // For production, use CORS proxy to bypass restrictions
-        // This proxies the request through a CORS-enabled server
-        const proxyUrl = `${this.CORS_PROXY}${encodeURIComponent(url)}`;
+        // Construct URL through HA proxy
+        const proxyUrl = `${this.HA_PROXY_BASE}/${cleanPath}`;
 
         const response = await fetch(proxyUrl, {
             cache: 'no-cache',
@@ -30,8 +21,7 @@ export class MeteoSwissAPI {
     }
 
     async getVersions(): Promise<Record<string, string>> {
-        const url = `${this.METEOSWISS_BASE}/versions.json`;
-        const response = await this.fetchWithCorsProxy(url);
+        const response = await this.fetchViaHAProxy('versions.json');
 
         if (!response.ok) {
             throw new Error(`Failed to fetch versions: ${response.status} ${response.statusText}`);
@@ -40,8 +30,8 @@ export class MeteoSwissAPI {
     }
 
     async getAnimationData(timestamp: string): Promise<MeteoSwissAnimationData> {
-        const url = `${this.METEOSWISS_BASE}/precipitation/animation/version__${timestamp}/en/animation.json`;
-        const response = await this.fetchWithCorsProxy(url);
+        const path = `precipitation/animation/version__${timestamp}/en/animation.json`;
+        const response = await this.fetchViaHAProxy(path);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch animation data: ${response.status} ${response.statusText}`);
@@ -50,19 +40,16 @@ export class MeteoSwissAPI {
     }
 
     async fetchRadarFrame(radarUrl: string): Promise<Response> {
-        const fullUrl = radarUrl.startsWith('http')
-            ? radarUrl
-            : `https://www.meteoswiss.admin.ch${radarUrl}`;
-
-        return this.fetchWithCorsProxy(fullUrl);
+        // radarUrl is typically like: /product/output/radar/rzc/radar_rzc.2025...json
+        // Extract the path after /product/output/
+        const path = radarUrl.replace(/^\/product\/output\//, '').replace(/^https?:\/\/[^/]+\/product\/output\//, '');
+        return this.fetchViaHAProxy(path);
     }
 
     getEffectiveUrl(path: string): string {
-        if (this.isLocal) {
-            return path;
-        }
-        const fullUrl = path.startsWith('http') ? path : `https://www.meteoswiss.admin.ch${path}`;
-        return `${this.CORS_PROXY}${encodeURIComponent(fullUrl)}`;
+        // Not used anymore, but keep for compatibility
+        const cleanPath = path.replace(/^\/product\/output\//, '').replace(/^https?:\/\/[^/]+\/product\/output\//, '');
+        return `${this.HA_PROXY_BASE}/${cleanPath}`;
     }
 }
 

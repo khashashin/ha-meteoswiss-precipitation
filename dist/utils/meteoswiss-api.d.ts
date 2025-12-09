@@ -1,8 +1,6 @@
 export declare class MeteoSwissAPI {
-    private isLocal;
-    private readonly METEOSWISS_BASE;
-    private readonly CORS_PROXY;
-    private fetchWithCorsProxy;
+    private readonly HA_PROXY_BASE;
+    private fetchViaHAProxy;
     getVersions(): Promise<Record<string, string>>;
     getAnimationData(timestamp: string): Promise<MeteoSwissAnimationData>;
     fetchRadarFrame(radarUrl: string): Promise<Response>;

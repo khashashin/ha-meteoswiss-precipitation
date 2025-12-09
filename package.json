@@ -4,7 +4,8 @@
     "description": "MeteoSwiss Precipitation Radar Card for Home Assistant",
     "main": "dist/meteoswiss-radar-card.js",
     "scripts": {
-        "build": "rollup -c",
+        "build": "rollup -c && npm run copy-to-integration",
+        "copy-to-integration": "node scripts/copy-card.js",
         "watch": "rollup -c --watch",
         "lint": "eslint src/**/*.ts",
         "format": "prettier --write src/**/*.ts",
