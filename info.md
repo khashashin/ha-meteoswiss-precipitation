@@ -31,3 +31,7 @@ zoom_level: 12  # Optional: Default zoom level (7-21). Default is 12
 | `zoom_level` | integer | `12`    | Initial zoom level of the map. Min: 7, Max: 21.                             |
 
 The map automatically centers on your Home Assistant zone location (latitude/longitude specified in HA configuration). If that is not set, it defaults to Bern, Switzerland.
+
+## How It Works
+
+This card fetches real-time precipitation data from MeteoSwiss's public API. Due to browser security (CORS restrictions), requests are routed through a CORS proxy service to access the MeteoSwiss data. This is a common solution for browser-based applications accessing APIs without CORS headers.

@@ -57,6 +57,12 @@ zoom_level: 12  # Optional: Default zoom level (7-21). Default is 12 (approx. ci
 
 **Note**: The map automatically centers on your Home Assistant zone location (latitude/longitude specified in HA configuration). If that is not set, it defaults to Bern, Switzerland.
 
+## CORS Proxy Information
+
+MeteoSwiss blocks cross-origin requests from browsers for security reasons. This card uses a public CORS proxy service (`corsproxy.io`) to fetch weather data. The proxy simply forwards requests and is necessary for the card to function in Home Assistant.
+
+**Privacy Note**: Weather data requests go through the CORS proxy. No personal or Home Assistant data is sent—only publicly available MeteoSwiss URLs are accessed.
+
 ## Development
 
 To build the project locally:

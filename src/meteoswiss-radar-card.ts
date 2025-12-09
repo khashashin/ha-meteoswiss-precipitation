@@ -234,10 +234,8 @@ export class MeteoSwissRadarCard extends LitElement {
 
         // Fetch specific Radar JSON for this frame
         // URL in animation.json is relative: /product/output/radar/rzc/radar_rzc.2025...json
-        const jsonUrl = this._api.getEffectiveUrl(frame.radar_url);
-
         try {
-            const resp = await fetch(jsonUrl);
+            const resp = await this._api.fetchRadarFrame(frame.radar_url);
             if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
             const data: MeteoSwissRadarJSON = await resp.json();
 
