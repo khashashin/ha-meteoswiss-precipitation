@@ -7,14 +7,27 @@ import { decodeShape, MeteoSwissRadarJSON } from './utils/decoder';
 import { throttle } from './utils/throttle';
 import { SWISS_BOUNDARY_GEOJSON } from './utils/switzerland-boundary';
 
-// Register card for the card picker
-(window as any).customCards = (window as any).customCards || [];
-(window as any).customCards.push({
-    type: 'meteoswiss-radar-card',
-    name: 'MeteoSwiss Radar',
-    description: 'A responsive weather radar card for Switzerland with high-resolution masking.',
-    preview: true, // Enables preview in the picker
-});
+// Declare custom card for Home Assistant UI
+declare global {
+    interface Window {
+        customCards: Array<{
+            type: string;
+            name: string;
+            description: string;
+            preview?: boolean;
+        }>;
+    }
+}
+
+if (!customElements.get('meteoswiss-radar-card')) {
+    window.customCards = window.customCards || [];
+    window.customCards.push({
+        type: 'meteoswiss-radar-card',
+        name: 'MeteoSwiss Radar',
+        description: 'A responsive weather radar card for Switzerland with high-resolution masking.',
+        preview: false,
+    });
+}
 
 // Types for Home Assistant
 interface HomeAssistant {
@@ -383,10 +396,3 @@ export class MeteoSwissRadarCard extends LitElement {
     }
 }
 
-// Global registration
-(window as any).customCards = (window as any).customCards || [];
-(window as any).customCards.push({
-    type: 'meteoswiss-radar-card',
-    name: 'MeteoSwiss Precipitation Radar',
-    description: 'Official MeteoSwiss Precipitation Radar',
-});

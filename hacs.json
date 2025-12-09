@@ -1,5 +1,6 @@
 {
     "name": "MeteoSwiss Radar Card",
-    "render_readme": true,
-    "filename": "dist/meteoswiss-radar-card.js"
+    "content_in_root": false,
+    "filename": "meteoswiss-radar-card.js",
+    "render_readme": true
 }
