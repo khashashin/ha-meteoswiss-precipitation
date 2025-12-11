@@ -6,6 +6,7 @@ import { MeteoSwissAPI } from './utils/meteoswiss-api';
 import { decodeShape, MeteoSwissRadarJSON } from './utils/decoder';
 import { throttle } from './utils/throttle';
 import { SWISS_BOUNDARY_GEOJSON } from './utils/switzerland-boundary';
+import './editor';
 
 // Declare custom card for Home Assistant UI
 declare global {
@@ -62,6 +63,20 @@ export class MeteoSwissRadarCard extends LitElement {
     private _animationInterval?: number;
 
     static styles = styles;
+
+    public static async getConfigElement() {
+        return document.createElement('meteoswiss-radar-card-editor');
+    }
+
+    public static getStubConfig() {
+        return {
+            type: 'custom:meteoswiss-radar-card',
+            card_title: 'MeteoSwiss Radar',
+            zoom_level: 12,
+            center_latitude: 46.8182,
+            center_longitude: 8.2275
+        };
+    }
 
     setConfig(config: LovelaceCardConfig): void {
         console.log('setConfig called', config);
@@ -393,4 +408,3 @@ export class MeteoSwissRadarCard extends LitElement {
         return 5;
     }
 }
-
