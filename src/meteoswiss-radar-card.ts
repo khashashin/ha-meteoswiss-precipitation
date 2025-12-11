@@ -6,7 +6,7 @@ import { MeteoSwissAPI } from './utils/meteoswiss-api';
 import { decodeShape, MeteoSwissRadarJSON } from './utils/decoder';
 import { throttle } from './utils/throttle';
 import { SWISS_BOUNDARY_GEOJSON } from './utils/switzerland-boundary';
-import './editor';
+
 
 // Declare custom card for Home Assistant UI
 declare global {
@@ -65,6 +65,8 @@ export class MeteoSwissRadarCard extends LitElement {
     static styles = styles;
 
     public static async getConfigElement() {
+        console.log('getConfigElement called for MeteoSwissRadarCard');
+        await import('./editor');
         return document.createElement('meteoswiss-radar-card-editor');
     }
 
