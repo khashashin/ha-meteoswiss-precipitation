@@ -96,7 +96,7 @@ export class MeteoSwissRadarCard extends LitElement {
             if (this._map) {
                 const [lat, lng] = this._getCenter();
                 // Only flyTo if significant difference to avoid jitters, or rely on Leaflet to handle it.
-                // For now, simplistically setView. 
+                // For now, simplistically setView.
                 // Note: We might want to check if the user has manually panned, but for now enforcing center is safer to match expectation.
                 this._map.setView([lat, lng], this._config.zoom_level || 12);
             }
@@ -358,7 +358,7 @@ export class MeteoSwissRadarCard extends LitElement {
     }
 
     private _onSliderChange(e: Event) {
-        // Optional: Resume playing if it was playing before? 
+        // Optional: Resume playing if it was playing before?
         // For now, keep it paused to let user examine the frame.
     }
 

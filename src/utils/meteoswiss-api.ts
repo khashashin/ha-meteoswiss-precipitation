@@ -19,14 +19,12 @@ export class MeteoSwissAPI {
         // This proxies the request through a CORS-enabled server
         const proxyUrl = `${this.CORS_PROXY}${encodeURIComponent(url)}`;
 
-        const response = await fetch(proxyUrl, {
+        return await fetch(proxyUrl, {
             cache: 'no-cache',
             headers: {
                 'Accept': 'application/json'
             }
         });
-
-        return response;
     }
 
     async getVersions(): Promise<Record<string, string>> {
