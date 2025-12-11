@@ -12,6 +12,7 @@ export default {
         file: 'dist/meteoswiss-radar-card.js',
         format: 'es',
         sourcemap: dev ? true : false,
+        inlineDynamicImports: true,
     },
     plugins: [
         resolve(),
