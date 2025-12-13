@@ -110,11 +110,25 @@ export class MeteoSwissRadarCard extends LitElement {
 
     protected updated(changedProperties: PropertyValues): void {
         super.updated(changedProperties);
-        // Only reset view on config change (e.g. editor), NOT on every hass update
-        if (changedProperties.has('_config') && this._map) {
-            const [lat, lng] = this._getCenter();
-            this._map.setView([lat, lng], this._config.zoom_level || 12);
-            this._isDefaultView = true;
+        // Only reset view on config change OR if we are in default view and HA provides a new location (init)
+        if ((changedProperties.has('_config') || changedProperties.has('hass')) && this._map) {
+            if (this._isDefaultView) {
+                const [lat, lng] = this._getCenter();
+                const currentCenter = this._map.getCenter();
+
+                // Check if target differs significantly from current (to avoid jitter on every hass update)
+                // or if it's a config change which should force update
+                const dist = Math.sqrt(
+                    Math.pow(currentCenter.lat - lat, 2) +
+                    Math.pow(currentCenter.lng - lng, 2)
+                );
+
+                if (changedProperties.has('_config') || dist > 0.001) {
+                    this._map.setView([lat, lng], this._config.zoom_level || 12);
+                    // Explicitly ensure default view is kept true
+                    this._isDefaultView = true;
+                }
+            }
         }
     }
 
