@@ -75,9 +75,7 @@ export class MeteoSwissRadarCard extends LitElement {
         return {
             type: 'custom:meteoswiss-radar-card',
             card_title: 'MeteoSwiss Radar',
-            zoom_level: 12,
-            center_latitude: 46.8182,
-            center_longitude: 8.2275
+            zoom_level: 12
         };
     }
 

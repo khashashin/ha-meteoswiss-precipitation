@@ -69,7 +69,7 @@ export class MeteoSwissRadarCardEditor extends LitElement {
                     <input
                         type="number"
                         step="0.0001"
-                        .value=${this._config.center_latitude || ''}
+                        .value=${this._config.center_latitude || this.hass.config.latitude}
                         @input=${this._valueChanged}
                         .configValue=${'center_latitude'}
                     />
@@ -79,7 +79,7 @@ export class MeteoSwissRadarCardEditor extends LitElement {
                     <input
                         type="number"
                         step="0.0001"
-                        .value=${this._config.center_longitude || ''}
+                        .value=${this._config.center_longitude || this.hass.config.longitude}
                         @input=${this._valueChanged}
                         .configValue=${'center_longitude'}
                     />

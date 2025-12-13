@@ -42,8 +42,6 @@ export declare class MeteoSwissRadarCard extends LitElement {
         type: string;
         card_title: string;
         zoom_level: number;
-        center_latitude: number;
-        center_longitude: number;
     };
     setConfig(config: LovelaceCardConfig): void;
     protected firstUpdated(_changedProperties: PropertyValues): void;
