@@ -22,13 +22,56 @@ export const styles = css`
     padding: 0; /* Remove default padding if needed, or keep it */
   }
   
-  .map-container {
+  .map-wrapper {
+    position: relative;
     flex-grow: 1;
     width: 100%;
-    /* Remove fixed min-height if we want it to shrink, or keep small min-height */
-    min-height: 200px; 
-    position: relative;
+    min-height: 200px;
     z-index: 0;
+  }
+
+  .map-container {
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  .reset-button {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 1000;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 1;
+    transform: translateY(0);
+    color: #444;
+  }
+
+  .reset-button:hover {
+    background: #f4f4f4;
+    color: #000;
+  }
+
+  .reset-button.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+  }
+
+  .reset-button svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
   }
 
   .controls {
@@ -39,10 +82,8 @@ export const styles = css`
     box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
     z-index: 1000;
     gap: 4px;
-    /* Ensure controls stay at bottom and don't shrink */
     flex-shrink: 0; 
   }
-
   .time-label {
     text-align: center;
     font-size: 14px;
@@ -110,7 +151,7 @@ export const styles = css`
       display: flex;
       flex-direction: column;
       gap: 4px;
-      pointer-events: none; /* Let clicks pass through if needed, though usually legend is interactive */
+      pointer-events: none;
   }
   
   .legend-item {

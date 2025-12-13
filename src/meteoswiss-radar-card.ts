@@ -56,6 +56,7 @@ export class MeteoSwissRadarCard extends LitElement {
     @state() private _isPlaying: boolean = true;
     @state() private _currentFrameIndex: number = 0;
     @state() private _frames: any[] = []; // Animation frames from animation.json
+    @state() private _isDefaultView: boolean = true;
 
     private _api = new MeteoSwissAPI();
     private _mapContainer?: HTMLElement;
@@ -109,14 +110,11 @@ export class MeteoSwissRadarCard extends LitElement {
 
     protected updated(changedProperties: PropertyValues): void {
         super.updated(changedProperties);
-        if (changedProperties.has('hass') || changedProperties.has('_config')) {
-            if (this._map) {
-                const [lat, lng] = this._getCenter();
-                // Only flyTo if significant difference to avoid jitters, or rely on Leaflet to handle it.
-                // For now, simplistically setView.
-                // Note: We might want to check if the user has manually panned, but for now enforcing center is safer to match expectation.
-                this._map.setView([lat, lng], this._config.zoom_level || 12);
-            }
+        // Only reset view on config change (e.g. editor), NOT on every hass update
+        if (changedProperties.has('_config') && this._map) {
+            const [lat, lng] = this._getCenter();
+            this._map.setView([lat, lng], this._config.zoom_level || 12);
+            this._isDefaultView = true;
         }
     }
 
@@ -155,6 +153,9 @@ export class MeteoSwissRadarCard extends LitElement {
             ],
             maxBoundsViscosity: 1.0
         });
+
+        // Track View State
+        this._map.on('moveend zoomend', () => this._checkView());
 
         // 2. Base Layer
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -379,11 +380,46 @@ export class MeteoSwissRadarCard extends LitElement {
         // For now, keep it paused to let user examine the frame.
     }
 
+    private _checkView() {
+        if (!this._map || !this._config) return;
+
+        const [defaultLat, defaultLng] = this._getCenter();
+        const defaultZoom = this._config.zoom_level || 12;
+
+        const currentCenter = this._map.getCenter();
+        const currentZoom = this._map.getZoom();
+
+        const latDiff = Math.abs(currentCenter.lat - defaultLat);
+        const lngDiff = Math.abs(currentCenter.lng - defaultLng);
+        const zoomDiff = Math.abs(currentZoom - defaultZoom);
+
+        // Threshold to consider "moved"
+        const isMoved = latDiff > 0.005 || lngDiff > 0.005 || zoomDiff > 0.5;
+        this._isDefaultView = !isMoved;
+    }
+
+    private _resetView() {
+        if (!this._map || !this._config) return;
+        const [lat, lng] = this._getCenter();
+        this._map.flyTo([lat, lng], this._config.zoom_level || 12);
+    }
+
     render() {
         return html`
       <ha-card>
         <div class="card-content">
-          <div class="map-container"></div>
+          <div class="map-wrapper">
+            <div class="map-container"></div>
+            <button 
+                class="reset-button ${this._isDefaultView ? 'hidden' : ''}" 
+                @click=${this._resetView}
+                title="Reset View"
+            >
+                <svg viewBox="0 0 24 24">
+                    <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
+                </svg>
+            </button>
+          </div>
           
           <div class="controls">
              <div class="time-label">${this._timeLabel}</div>

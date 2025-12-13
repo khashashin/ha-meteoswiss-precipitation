@@ -31,6 +31,7 @@ export declare class MeteoSwissRadarCard extends LitElement {
     private _isPlaying;
     private _currentFrameIndex;
     private _frames;
+    private _isDefaultView;
     private _api;
     private _mapContainer?;
     private _canvasLayer?;
@@ -59,6 +60,8 @@ export declare class MeteoSwissRadarCard extends LitElement {
     private _formatTime;
     private _onSliderInput;
     private _onSliderChange;
+    private _checkView;
+    private _resetView;
     render(): import("lit-html").TemplateResult<1>;
     getCardSize(): number;
 }
