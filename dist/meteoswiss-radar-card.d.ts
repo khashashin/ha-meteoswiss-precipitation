@@ -9,6 +9,8 @@ declare global {
         }>;
     }
 }
+declare const DEFAULT_TIME_MODES: readonly ["latest", "now"];
+type DefaultTimeMode = (typeof DEFAULT_TIME_MODES)[number];
 interface HomeAssistant {
     language: string;
     config: {
@@ -22,6 +24,7 @@ interface LovelaceCardConfig {
     zoom_level?: number;
     center_latitude?: number;
     center_longitude?: number;
+    default_time?: DefaultTimeMode;
 }
 export declare class MeteoSwissRadarCard extends LitElement {
     hass: HomeAssistant;
@@ -36,6 +39,9 @@ export declare class MeteoSwissRadarCard extends LitElement {
     private _mapContainer?;
     private _canvasLayer?;
     private _animationInterval?;
+    private _refreshInterval?;
+    private _mapInitializing;
+    private _renderToken;
     static styles: import("lit").CSSResult;
     static getConfigElement(): Promise<HTMLElement>;
     static getStubConfig(): {
@@ -45,13 +51,22 @@ export declare class MeteoSwissRadarCard extends LitElement {
     };
     setConfig(config: LovelaceCardConfig): void;
     protected firstUpdated(_changedProperties: PropertyValues): void;
+    connectedCallback(): void;
+    disconnectedCallback(): void;
     protected updated(changedProperties: PropertyValues): void;
     private _initializeMap;
+    private _createMap;
     private _getCenter;
+    private _fetchFrames;
     private _loadData;
+    private _startAutoRefresh;
+    private _refreshData;
+    private _pickFrameIndex;
+    private _findClosestFrameIndex;
     private _renderFrame;
     private _drawRadarData;
     private _startAnimation;
+    private _stopTimers;
     private _togglePlay;
     private _throttledRenderFrame;
     constructor();

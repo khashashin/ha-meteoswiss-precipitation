@@ -1,12 +1,15 @@
 import { LitElement, html, css, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
+type DefaultTimeMode = 'latest' | 'now';
+
 interface LovelaceCardConfig {
     type: string;
     card_title?: string;
     zoom_level?: number;
     center_latitude?: number;
     center_longitude?: number;
+    default_time?: DefaultTimeMode;
 }
 
 @customElement('meteoswiss-radar-card-editor')
@@ -32,7 +35,8 @@ export class MeteoSwissRadarCardEditor extends LitElement {
         label {
             font-weight: 500;
         }
-        input {
+        input,
+        select {
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -63,6 +67,17 @@ export class MeteoSwissRadarCardEditor extends LitElement {
                         @input=${this._valueChanged}
                         .configValue=${'zoom_level'}
                     />
+                </div>
+                <div class="option">
+                    <label>Start Frame</label>
+                    <select
+                        .value=${this._config.default_time || 'latest'}
+                        @change=${this._valueChanged}
+                        .configValue=${'default_time'}
+                    >
+                        <option value="latest">End of forecast (default)</option>
+                        <option value="now">Closest to current time</option>
+                    </select>
                 </div>
                 <div class="option">
                     <label>Center Latitude (Optional)</label>

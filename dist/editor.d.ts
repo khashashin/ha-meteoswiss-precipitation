@@ -1,10 +1,12 @@
 import { LitElement } from 'lit';
+type DefaultTimeMode = 'latest' | 'now';
 interface LovelaceCardConfig {
     type: string;
     card_title?: string;
     zoom_level?: number;
     center_latitude?: number;
     center_longitude?: number;
+    default_time?: DefaultTimeMode;
 }
 export declare class MeteoSwissRadarCardEditor extends LitElement {
     hass?: any;

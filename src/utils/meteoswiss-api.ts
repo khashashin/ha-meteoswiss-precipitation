@@ -64,12 +64,16 @@ export class MeteoSwissAPI {
     }
 }
 
-interface MeteoSwissAnimationData {
-    map_images: Array<{
-        day: string;
-        pictures: Array<{
-            timestamp: number;
-            radar_url: string;
-        }>;
-    }>;
+export interface MeteoSwissRadarFrame {
+    timestamp: number; // Epoch seconds
+    radar_url: string;
+}
+
+export interface MeteoSwissAnimationDay {
+    day: string;
+    pictures: MeteoSwissRadarFrame[];
+}
+
+export interface MeteoSwissAnimationData {
+    map_images: MeteoSwissAnimationDay[];
 }

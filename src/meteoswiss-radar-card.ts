@@ -2,7 +2,7 @@ import { LitElement, html, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import * as L from 'leaflet';
 import { styles } from './styles';
-import { MeteoSwissAPI } from './utils/meteoswiss-api';
+import { MeteoSwissAPI, MeteoSwissRadarFrame } from './utils/meteoswiss-api';
 import { decodeShape, MeteoSwissRadarJSON } from './utils/decoder';
 import { throttle } from './utils/throttle';
 import { SWISS_BOUNDARY_GEOJSON } from './utils/switzerland-boundary';
@@ -30,6 +30,15 @@ if (!customElements.get('meteoswiss-radar-card')) {
     });
 }
 
+// MeteoSwiss publishes a new radar frame every 5 minutes. Poll slightly more
+// often so a permanently open dashboard cannot phase-lock a full frame behind.
+const REFRESH_INTERVAL_MS = 4 * 60 * 1000;
+
+// Which frame the card shows on load, and which it falls back to when the frame
+// it was showing drops out of the animation window during a refresh.
+const DEFAULT_TIME_MODES = ['latest', 'now'] as const;
+type DefaultTimeMode = (typeof DEFAULT_TIME_MODES)[number];
+
 // Types for Home Assistant
 interface HomeAssistant {
     language: string;
@@ -45,6 +54,7 @@ interface LovelaceCardConfig {
     zoom_level?: number;
     center_latitude?: number;
     center_longitude?: number;
+    default_time?: DefaultTimeMode;
 }
 
 @customElement('meteoswiss-radar-card')
@@ -55,13 +65,16 @@ export class MeteoSwissRadarCard extends LitElement {
     @state() private _timeLabel: string = 'Loading...';
     @state() private _isPlaying: boolean = true;
     @state() private _currentFrameIndex: number = 0;
-    @state() private _frames: any[] = []; // Animation frames from animation.json
+    @state() private _frames: MeteoSwissRadarFrame[] = []; // Animation frames from animation.json
     @state() private _isDefaultView: boolean = true;
 
     private _api = new MeteoSwissAPI();
     private _mapContainer?: HTMLElement;
     private _canvasLayer?: L.Layer;
     private _animationInterval?: number;
+    private _refreshInterval?: number;
+    private _mapInitializing = false;
+    private _renderToken = 0;
 
     static styles = styles;
 
@@ -84,8 +97,14 @@ export class MeteoSwissRadarCard extends LitElement {
         if (!config) {
             throw new Error('Invalid configuration');
         }
+        if (config.default_time !== undefined && !DEFAULT_TIME_MODES.includes(config.default_time)) {
+            throw new Error(
+                `Invalid default_time "${config.default_time}". Expected one of: ${DEFAULT_TIME_MODES.join(', ')}.`
+            );
+        }
         this._config = {
             zoom_level: 12,
+            default_time: 'latest',
             ...config
         };
 
@@ -104,6 +123,34 @@ export class MeteoSwissRadarCard extends LitElement {
     protected firstUpdated(_changedProperties: PropertyValues): void {
         super.firstUpdated(_changedProperties);
         this._initializeMap();
+    }
+
+    public connectedCallback(): void {
+        super.connectedCallback();
+        // On the first connect firstUpdated() does the setup; this only covers
+        // re-attach, e.g. Home Assistant moving the card between containers.
+        if (!this.hasUpdated || !this._config) return;
+
+        this._initializeMap().then(() => {
+            if (this._frames.length) {
+                this._renderFrame(this._currentFrameIndex);
+            }
+        });
+
+        if (this._frames.length) {
+            this._startAnimation();
+            this._startAutoRefresh();
+        }
+    }
+
+    public disconnectedCallback(): void {
+        super.disconnectedCallback();
+        // Without this the animation and refresh timers keep firing (and keep
+        // fetching) for every card Home Assistant has ever torn down.
+        this._stopTimers();
+        this._map?.remove();
+        this._map = undefined;
+        this._canvasLayer = undefined;
     }
 
     protected updated(changedProperties: PropertyValues): void {
@@ -133,8 +180,22 @@ export class MeteoSwissRadarCard extends LitElement {
     private async _initializeMap(): Promise<void> {
         this._mapContainer = this.shadowRoot?.querySelector('.map-container') as HTMLElement;
         if (!this._mapContainer) return;
-        if (this._map) return;
+        if (this._map || this._mapInitializing) return;
         if (!this._config) return;
+
+        // setConfig(), firstUpdated() and connectedCallback() can all reach this
+        // method. Without this flag the await below lets a second caller past the
+        // guard above and Leaflet throws "Map container is already initialized".
+        this._mapInitializing = true;
+        try {
+            await this._createMap();
+        } finally {
+            this._mapInitializing = false;
+        }
+    }
+
+    private async _createMap(): Promise<void> {
+        if (!this._mapContainer) return;
 
         // Inject Leaflet CSS into shadow root (only once)
         if (!this.shadowRoot?.querySelector('#leaflet-css')) {
@@ -223,41 +284,112 @@ export class MeteoSwissRadarCard extends LitElement {
         return [46.8182, 8.2275];
     }
 
+    private async _fetchFrames(): Promise<MeteoSwissRadarFrame[]> {
+        const versions = await this._api.getVersions();
+
+        const accum = versions['precipitation/animation']; // Timestamp
+        if (!accum) throw new Error('No animation timestamp found');
+
+        const animationData = await this._api.getAnimationData(accum);
+
+        // map_images is an array of day objects: [{ day: '...', pictures: [...] }, ...]
+        return animationData.map_images
+            .reduce<MeteoSwissRadarFrame[]>((acc, dayGroup) => acc.concat(dayGroup.pictures || []), [])
+            .filter(frame => Boolean(frame.radar_url))
+            .sort((a, b) => a.timestamp - b.timestamp);
+    }
+
     private async _loadData(): Promise<void> {
         try {
-            this._timeLabel = 'Fetching versions...';
-            const versions = await this._api.getVersions();
+            this._timeLabel = 'Fetching radar data...';
+            const frames = await this._fetchFrames();
 
-            const accum = versions['precipitation/animation']; // Timestamp
-            if (!accum) throw new Error('No animation timestamp found');
-
-            this._timeLabel = 'Fetching animation...';
-            const animationData = await this._api.getAnimationData(accum);
-
-            // Filter for available radar frames
-            // map_images is an array of day objects: [{ day: '...', pictures: [...] }, ...]
-            const allFrames = animationData.map_images.reduce((acc: any[], dayGroup: any) => {
-                return acc.concat(dayGroup.pictures || []);
-            }, []);
-
-            this._frames = allFrames.filter((img: any) => img.radar_url);
-
-            if (this._frames.length > 0) {
-                this._currentFrameIndex = this._frames.length - 1; // Start at latest
-                this._renderFrame(this._currentFrameIndex);
-                this._startAnimation();
-            } else {
+            if (!frames.length) {
                 this._timeLabel = 'No radar data available';
+                return;
             }
-        } catch (e: any) {
+
+            this._frames = frames;
+            this._currentFrameIndex = this._pickFrameIndex(frames);
+            await this._renderFrame(this._currentFrameIndex);
+            this._startAnimation();
+            this._startAutoRefresh();
+        } catch (e) {
+            const message = e instanceof Error ? e.message : String(e);
             console.error('Err loading data', e);
-            this._timeLabel = `Error: ${e.message}`;
+            this._timeLabel = `Error: ${message}`;
         }
+    }
+
+    private _startAutoRefresh(): void {
+        if (this._refreshInterval) clearInterval(this._refreshInterval);
+
+        this._refreshInterval = window.setInterval(() => {
+            this._refreshData();
+        }, REFRESH_INTERVAL_MS);
+    }
+
+    // Pull a fresh frame list periodically. Without this a dashboard left open
+    // keeps looping the window captured when the card was created, so its
+    // "forecast" quietly ages into the past.
+    private async _refreshData(): Promise<void> {
+        try {
+            const frames = await this._fetchFrames();
+            if (!frames.length) return;
+
+            const currentTimestamp = this._frames[this._currentFrameIndex]?.timestamp;
+            this._frames = frames;
+
+            // Keep the viewer on the same moment in time rather than the same
+            // array index: the window slides forward, so indices shift under us.
+            const preservedIndex = currentTimestamp === undefined
+                ? -1
+                : frames.findIndex(frame => frame.timestamp === currentTimestamp);
+
+            if (preservedIndex >= 0) {
+                // Same frame is still on screen and still valid - leave it alone.
+                this._currentFrameIndex = preservedIndex;
+                return;
+            }
+
+            this._currentFrameIndex = this._pickFrameIndex(frames);
+            await this._renderFrame(this._currentFrameIndex);
+        } catch (e) {
+            // Keep showing the frames we already have; the next tick can recover.
+            console.error('Radar refresh failed', e);
+        }
+    }
+
+    private _pickFrameIndex(frames: MeteoSwissRadarFrame[]): number {
+        if (this._config?.default_time === 'now') {
+            return this._findClosestFrameIndex(frames, Date.now() / 1000);
+        }
+        // Default: the last frame, i.e. the end of the forecast window.
+        return frames.length - 1;
+    }
+
+    private _findClosestFrameIndex(frames: MeteoSwissRadarFrame[], targetSeconds: number): number {
+        let closestIndex = 0;
+        let closestDiff = Infinity;
+
+        frames.forEach((frame, index) => {
+            const diff = Math.abs(frame.timestamp - targetSeconds);
+            if (diff < closestDiff) {
+                closestDiff = diff;
+                closestIndex = index;
+            }
+        });
+
+        return closestIndex;
     }
 
     private async _renderFrame(index: number) {
         if (!this._frames[index]) return;
         const frame = this._frames[index];
+
+        // The animation timer, the slider and the refresh can all have a fetch in
+        // flight at once; only the most recently requested frame may draw.
+        const token = ++this._renderToken;
 
         // Update Time Label
         this._timeLabel = this._formatTime(frame.timestamp);
@@ -269,6 +401,7 @@ export class MeteoSwissRadarCard extends LitElement {
             if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
             const data: MeteoSwissRadarJSON = await resp.json();
 
+            if (token !== this._renderToken) return;
             this._drawRadarData(data);
         } catch (e) {
             console.error('Failed to load frame json', e);
@@ -339,10 +472,22 @@ export class MeteoSwissRadarCard extends LitElement {
 
         this._animationInterval = window.setInterval(() => {
             if (!this._isPlaying) return;
+            if (!this._frames.length) return;
 
             this._currentFrameIndex = (this._currentFrameIndex + 1) % this._frames.length;
             this._renderFrame(this._currentFrameIndex);
         }, 1000); // 1 fps
+    }
+
+    private _stopTimers(): void {
+        if (this._animationInterval) {
+            clearInterval(this._animationInterval);
+            this._animationInterval = undefined;
+        }
+        if (this._refreshInterval) {
+            clearInterval(this._refreshInterval);
+            this._refreshInterval = undefined;
+        }
     }
 
     private _togglePlay() {

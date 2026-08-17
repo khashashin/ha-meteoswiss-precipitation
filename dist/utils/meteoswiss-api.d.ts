@@ -8,14 +8,15 @@ export declare class MeteoSwissAPI {
     fetchRadarFrame(radarUrl: string): Promise<Response>;
     getEffectiveUrl(path: string): string;
 }
-interface MeteoSwissAnimationData {
-    map_images: Array<{
-        day: string;
-        pictures: Array<{
-            timestamp: number;
-            radar_url: string;
-        }>;
-    }>;
+export interface MeteoSwissRadarFrame {
+    timestamp: number;
+    radar_url: string;
 }
-export {};
+export interface MeteoSwissAnimationDay {
+    day: string;
+    pictures: MeteoSwissRadarFrame[];
+}
+export interface MeteoSwissAnimationData {
+    map_images: MeteoSwissAnimationDay[];
+}
 //# sourceMappingURL=meteoswiss-api.d.ts.map
