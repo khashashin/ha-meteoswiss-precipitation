@@ -57,6 +57,7 @@ default_time: now  # Optional: start on the frame closest to the current time
 | `type`         | string  | **Required** | Must be `custom:meteoswiss-radar-card`.                                   |
 | `zoom_level`   | integer | `12`       | Initial zoom level of the map. Min: 7, Max: 21.                             |
 | `default_time` | string  | `latest`   | Which frame the card starts on. `latest` uses the last frame (the end of the forecast window); `now` uses the frame closest to the current time. |
+| `proxy_url`    | string  | shared     | CORS proxy to fetch MeteoSwiss data through. See [CORS Proxy Information](#cors-proxy-information). |
 
 **Note**: The map automatically centers on your Home Assistant zone location (latitude/longitude specified in HA configuration). If that is not set, it defaults to Bern, Switzerland.
 
@@ -66,9 +67,124 @@ The frame list is re-fetched every 4 minutes. When that happens the card stays o
 
 ## CORS Proxy Information
 
-MeteoSwiss blocks cross-origin requests from browsers for security reasons. This card uses a public CORS proxy service (`corsproxy.io`) to fetch weather data. The proxy simply forwards requests and is necessary for the card to function in Home Assistant.
+MeteoSwiss serves its radar data without an `Access-Control-Allow-Origin` header (and answers `OPTIONS` with `405`), so a browser cannot fetch it directly. A proxy is required.
+
+By default the card uses the shared public proxy `corsproxy.io`. That is a free service shared by every user of this card, so **you may hit HTTP 429 (rate limited)**. If that happens, point the card at a proxy of your own:
+
+```yaml
+type: "custom:meteoswiss-radar-card"
+proxy_url: "https://your-worker.your-name.workers.dev/?url={url}"
+```
+
+The `{url}` placeholder is replaced with the URL-encoded MeteoSwiss URL. If you leave the placeholder out, the encoded URL is appended to whatever you provide (the `corsproxy.io` convention).
+
+### Running your own proxy (Cloudflare Workers, free tier)
+
+This takes about five minutes and costs nothing. You need a Cloudflare account — **no domain and no credit card required**. The Workers free plan allows [100,000 requests per day](https://developers.cloudflare.com/workers/platform/limits/); this card uses roughly 1,000 per day per dashboard, so you have plenty of headroom.
+
+#### Step 1 — Create a free Cloudflare account
+
+Sign up at **[dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up)** and confirm the verification email. Skip any prompt to add a domain — you do not need one.
+
+#### Step 2 — Create the Worker
+
+1. Open the dashboard: **[dash.cloudflare.com](https://dash.cloudflare.com/)**
+2. In the left sidebar, choose **Compute (Workers)** — older dashboards call this **Workers & Pages**
+3. Click **Create**, then **Start with Hello World!** (older dashboards: **Create application** → **Create Worker**)
+4. Give it a name, for example `meteoswiss-proxy`. **This name becomes part of your URL**, so pick something you'll recognise.
+5. Click **Deploy**
+
+You now have a working "Hello World" Worker. The next step replaces its code.
+
+#### Step 3 — Paste in the proxy code
+
+1. Click **Edit code** (on the Worker's page, or **Continue to project** → **Edit code**)
+2. Select everything in the editor and delete it
+3. Paste this in its place:
+
+```js
+export default {
+  async fetch(request) {
+    const target = new URL(request.url).searchParams.get('url');
+
+    // Only ever proxy MeteoSwiss, so this cannot be used as an open relay.
+    if (!target || !target.startsWith('https://www.meteoswiss.admin.ch/')) {
+      return new Response('Forbidden', { status: 403 });
+    }
+
+    const upstream = await fetch(target, {
+      cf: { cacheTtl: 300, cacheEverything: true },
+    });
+
+    const response = new Response(upstream.body, upstream);
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    return response;
+  },
+};
+```
+
+4. Click **Deploy** (top right), and confirm
+
+#### Step 4 — Copy your Worker URL
+
+On the Worker's overview page you'll find its address, in the form:
+
+```
+https://meteoswiss-proxy.<your-subdomain>.workers.dev
+```
+
+`<your-subdomain>` is chosen once per account when you create your first Worker.
+
+#### Step 5 — Check that it works
+
+Paste this into a browser tab, replacing the host with your own:
+
+```
+https://meteoswiss-proxy.<your-subdomain>.workers.dev/?url=https%3A%2F%2Fwww.meteoswiss.admin.ch%2Fproduct%2Foutput%2Fversions.json
+```
+
+You should see a page of JSON. If you instead see:
+
+| Response | Cause |
+| :------- | :---- |
+| `Forbidden` (403) | The `?url=` parameter is missing, or does not start with `https://www.meteoswiss.admin.ch/` |
+| `Error 1101` / exception | The code was pasted incompletely — repeat Step 3 |
+| Cloudflare 404 page | Wrong URL; re-copy it from the Worker's overview page |
+
+#### Step 6 — Point the card at your Worker
+
+In YAML:
+
+```yaml
+type: "custom:meteoswiss-radar-card"
+proxy_url: "https://meteoswiss-proxy.<your-subdomain>.workers.dev/?url={url}"
+```
+
+Or in the visual editor, put the same value in the **CORS Proxy URL** field.
+
+Do not forget the `?url={url}` suffix — `{url}` is the placeholder the card replaces with the (encoded) MeteoSwiss address.
+
+Reload your dashboard. The 429 errors should be gone.
+
+#### Prefer the command line?
+
+```bash
+npm create cloudflare@latest -- meteoswiss-proxy
+# choose: "Hello World example" -> "Worker only" -> "JavaScript"
+
+# replace the contents of src/index.js with the code from Step 3, then:
+npx wrangler deploy
+```
+
+#### A note on sharing
+
+Your Worker URL is public. The allowlist in the code means nobody can use it to proxy anything other than MeteoSwiss, but someone who found the URL could still consume your daily quota. For a private setup, add a secret to the path or query and reject requests without it.
 
 **Privacy Note**: Weather data requests go through the CORS proxy. No personal or Home Assistant data is sent—only publicly available MeteoSwiss URLs are accessed.
+
+### Request volume
+
+The card caches every radar frame it has fetched, in memory and via the browser's HTTP cache (frame URLs are timestamped and immutable, and MeteoSwiss serves them with `max-age=86400`). A frame is therefore fetched once, not once per animation loop. In steady state the card makes only a couple of requests per 5 minutes, no matter how long the dashboard stays open.
 
 ## Development
 

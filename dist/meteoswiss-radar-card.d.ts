@@ -25,6 +25,7 @@ interface LovelaceCardConfig {
     center_latitude?: number;
     center_longitude?: number;
     default_time?: DefaultTimeMode;
+    proxy_url?: string;
 }
 export declare class MeteoSwissRadarCard extends LitElement {
     hass: HomeAssistant;
@@ -42,6 +43,7 @@ export declare class MeteoSwissRadarCard extends LitElement {
     private _refreshInterval?;
     private _mapInitializing;
     private _renderToken;
+    private _frameCache;
     static styles: import("lit").CSSResult;
     static getConfigElement(): Promise<HTMLElement>;
     static getStubConfig(): {
@@ -64,6 +66,8 @@ export declare class MeteoSwissRadarCard extends LitElement {
     private _pickFrameIndex;
     private _findClosestFrameIndex;
     private _renderFrame;
+    private _cacheFrame;
+    private _pruneFrameCache;
     private _drawRadarData;
     private _startAnimation;
     private _stopTimers;

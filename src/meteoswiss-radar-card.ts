@@ -39,6 +39,13 @@ const REFRESH_INTERVAL_MS = 4 * 60 * 1000;
 const DEFAULT_TIME_MODES = ['latest', 'now'] as const;
 type DefaultTimeMode = (typeof DEFAULT_TIME_MODES)[number];
 
+// Frame JSON is immutable per timestamp, so a frame only ever needs fetching
+// once. Without this the 1 fps loop re-fetches the whole window on every pass
+// (~1 request/second, forever) which is what rate limits the CORS proxy.
+// Frames average ~17 KB, so the cap below is a few MB of headroom over a full
+// animation window.
+const FRAME_CACHE_LIMIT = 400;
+
 // Types for Home Assistant
 interface HomeAssistant {
     language: string;
@@ -55,6 +62,7 @@ interface LovelaceCardConfig {
     center_latitude?: number;
     center_longitude?: number;
     default_time?: DefaultTimeMode;
+    proxy_url?: string;
 }
 
 @customElement('meteoswiss-radar-card')
@@ -75,6 +83,7 @@ export class MeteoSwissRadarCard extends LitElement {
     private _refreshInterval?: number;
     private _mapInitializing = false;
     private _renderToken = 0;
+    private _frameCache = new Map<string, MeteoSwissRadarJSON>();
 
     static styles = styles;
 
@@ -107,6 +116,7 @@ export class MeteoSwissRadarCard extends LitElement {
             default_time: 'latest',
             ...config
         };
+        this._api.setProxyUrl(this._config.proxy_url);
 
         // Trigger data load
         this._loadData().catch(e => {
@@ -339,6 +349,7 @@ export class MeteoSwissRadarCard extends LitElement {
 
             const currentTimestamp = this._frames[this._currentFrameIndex]?.timestamp;
             this._frames = frames;
+            this._pruneFrameCache(frames);
 
             // Keep the viewer on the same moment in time rather than the same
             // array index: the window slides forward, so indices shift under us.
@@ -394,6 +405,12 @@ export class MeteoSwissRadarCard extends LitElement {
         // Update Time Label
         this._timeLabel = this._formatTime(frame.timestamp);
 
+        const cached = this._frameCache.get(frame.radar_url);
+        if (cached) {
+            this._drawRadarData(cached);
+            return;
+        }
+
         // Fetch specific Radar JSON for this frame
         // URL in animation.json is relative: /product/output/radar/rzc/radar_rzc.2025...json
         try {
@@ -401,10 +418,35 @@ export class MeteoSwissRadarCard extends LitElement {
             if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
             const data: MeteoSwissRadarJSON = await resp.json();
 
+            this._cacheFrame(frame.radar_url, data);
+
             if (token !== this._renderToken) return;
             this._drawRadarData(data);
         } catch (e) {
             console.error('Failed to load frame json', e);
+        }
+    }
+
+    private _cacheFrame(radarUrl: string, data: MeteoSwissRadarJSON): void {
+        this._frameCache.set(radarUrl, data);
+
+        // Map preserves insertion order, so the first key is the oldest entry.
+        while (this._frameCache.size > FRAME_CACHE_LIMIT) {
+            const oldest = this._frameCache.keys().next().value;
+            if (oldest === undefined) break;
+            this._frameCache.delete(oldest);
+        }
+    }
+
+    // Frames that have slid out of the animation window will never be requested
+    // again, so drop them rather than waiting for the size cap to evict them.
+    private _pruneFrameCache(frames: MeteoSwissRadarFrame[]): void {
+        const live = new Set(frames.map(frame => frame.radar_url));
+
+        for (const url of this._frameCache.keys()) {
+            if (!live.has(url)) {
+                this._frameCache.delete(url);
+            }
         }
     }
 

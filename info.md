@@ -32,6 +32,7 @@ default_time: now  # Optional: start on the frame closest to the current time
 | `type`         | string  | **Required** | Must be `custom:meteoswiss-radar-card`.                                   |
 | `zoom_level`   | integer | `12`       | Initial zoom level of the map. Min: 7, Max: 21.                             |
 | `default_time` | string  | `latest`   | Which frame the card starts on. `latest` uses the last frame (the end of the forecast window); `now` uses the frame closest to the current time. |
+| `proxy_url`    | string  | shared     | CORS proxy to fetch MeteoSwiss data through, e.g. `https://your-worker.workers.dev/?url={url}`. Leave unset to use the shared public proxy. |
 
 The card auto-plays at 1 fps and loops through the whole window, so `default_time` sets where playback begins, not where it stays. The frame list is re-fetched every 4 minutes; the card keeps the frame you were watching, or falls back to `default_time` if that frame has aged out of the window.
 
@@ -39,4 +40,8 @@ The map automatically centers on your Home Assistant zone location (latitude/lon
 
 ## How It Works
 
-This card fetches real-time precipitation data from MeteoSwiss's public API. Due to browser security (CORS restrictions), requests are routed through a CORS proxy service to access the MeteoSwiss data. This is a common solution for browser-based applications accessing APIs without CORS headers.
+This card fetches real-time precipitation data from MeteoSwiss's public API. MeteoSwiss serves that data without CORS headers, so a browser cannot fetch it directly and requests are routed through a CORS proxy.
+
+The default is a shared public proxy, which is rate limited across all users of this card. If you see HTTP 429 errors, set `proxy_url` to a proxy of your own. The README has a [step-by-step guide for setting up a free Cloudflare Worker](https://github.com/khashashin/ha-meteoswiss-precipitation#running-your-own-proxy-cloudflare-workers-free-tier) — about five minutes, no domain or credit card needed.
+
+Radar frames are cached once fetched, so leaving the card open does not keep re-downloading the same frames.

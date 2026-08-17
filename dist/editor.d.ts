@@ -7,6 +7,7 @@ interface LovelaceCardConfig {
     center_latitude?: number;
     center_longitude?: number;
     default_time?: DefaultTimeMode;
+    proxy_url?: string;
 }
 export declare class MeteoSwissRadarCardEditor extends LitElement {
     hass?: any;

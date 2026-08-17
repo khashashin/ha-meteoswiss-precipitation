@@ -2,6 +2,9 @@ export declare class MeteoSwissAPI {
     private isLocal;
     private readonly METEOSWISS_BASE;
     private readonly CORS_PROXY;
+    private proxyTemplate?;
+    setProxyUrl(proxyUrl?: string): void;
+    private buildProxyUrl;
     private fetchWithCorsProxy;
     getVersions(): Promise<Record<string, string>>;
     getAnimationData(timestamp: string): Promise<MeteoSwissAnimationData>;

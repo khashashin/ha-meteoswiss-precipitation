@@ -10,6 +10,7 @@ interface LovelaceCardConfig {
     center_latitude?: number;
     center_longitude?: number;
     default_time?: DefaultTimeMode;
+    proxy_url?: string;
 }
 
 @customElement('meteoswiss-radar-card-editor')
@@ -34,6 +35,9 @@ export class MeteoSwissRadarCardEditor extends LitElement {
         }
         label {
             font-weight: 500;
+        }
+        small {
+            color: var(--secondary-text-color, #777);
         }
         input,
         select {
@@ -78,6 +82,17 @@ export class MeteoSwissRadarCardEditor extends LitElement {
                         <option value="latest">End of forecast (default)</option>
                         <option value="now">Closest to current time</option>
                     </select>
+                </div>
+                <div class="option">
+                    <label>CORS Proxy URL (Optional)</label>
+                    <input
+                        type="text"
+                        placeholder="https://your-worker.workers.dev/?url={url}"
+                        .value=${this._config.proxy_url || ''}
+                        @input=${this._valueChanged}
+                        .configValue=${'proxy_url'}
+                    />
+                    <small>Leave empty to use the shared public proxy (rate limited).</small>
                 </div>
                 <div class="option">
                     <label>Center Latitude (Optional)</label>
