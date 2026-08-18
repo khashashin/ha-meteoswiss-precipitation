@@ -3,6 +3,8 @@
 A high-performance, interactive weather radar card for Home Assistant, featuring high-resolution Swiss boundary masking, logical time-slider controls, and responsive design.
 
 ![Demo](docs/demo.gif)
+<img width="1030" height="804" alt="image" src="https://github.com/user-attachments/assets/5220697b-f9ae-44ea-b5a6-a1aef0783e96" />
+
 
 ## Features
 
