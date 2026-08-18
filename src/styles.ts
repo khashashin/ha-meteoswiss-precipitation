@@ -194,6 +194,24 @@ export const styles = css`
       border-radius: 2px;
   }
 
+  /* Pointer marking the configured location. Leaflet's divIcon default
+     className is replaced, so none of the .leaflet-div-icon box styling
+     applies - only the dot below is drawn. */
+  .center-marker {
+    pointer-events: none;
+  }
+
+  .center-marker-dot {
+    display: block;
+    width: 12px;
+    height: 12px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: #1976d2;
+    border: 2px solid #fff;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+  }
+
   /* Leaflet overrides */
   .leaflet-container {
     height: 100%;

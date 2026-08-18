@@ -8,6 +8,7 @@ A high-performance, interactive weather radar card for Home Assistant, featuring
 
 *   **🇨🇭 Swiss-Focused Map**: Automatically masks areas outside Switzerland with a dark overlay to focus attention on the relevant weather data.
 *   **High Resolution**: Uses high-quality vector boundaries for precise masking.
+*   **Location Pointer**: A small dot marks the coordinates the card is centred on — your Home Assistant location, or the configured override.
 *   **Interactive Controls**:
     *   **Time Slider**: Drag to scrub through radar history and forecast.
     *   **Play/Pause**: Animate the precipitation progression.

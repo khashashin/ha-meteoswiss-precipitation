@@ -80,6 +80,7 @@ export class MeteoSwissRadarCard extends LitElement {
     private _api = new MeteoSwissAPI();
     private _mapContainer?: HTMLElement;
     private _canvasLayer?: L.Layer;
+    private _centerMarker?: L.Marker;
     private _animationInterval?: number;
     private _refreshInterval?: number;
     private _mapInitializing = false;
@@ -162,12 +163,17 @@ export class MeteoSwissRadarCard extends LitElement {
         this._map?.remove();
         this._map = undefined;
         this._canvasLayer = undefined;
+        this._centerMarker = undefined;
     }
 
     protected updated(changedProperties: PropertyValues): void {
         super.updated(changedProperties);
         // Only reset view on config change OR if we are in default view and HA provides a new location (init)
         if ((changedProperties.has('_config') || changedProperties.has('hass')) && this._map) {
+            // The pointer tracks the chosen coordinates whether or not the user
+            // has panned away from them.
+            this._updateCenterMarker();
+
             if (this._isDefaultView) {
                 const [lat, lng] = this._getCenter();
                 const currentCenter = this._map.getCenter();
@@ -275,9 +281,41 @@ export class MeteoSwissRadarCard extends LitElement {
             interactive: false // Click-through
         }).addTo(this._map);
 
+        // 4. Mark the configured location (config override, else the Home
+        // Assistant zone, else the Swiss centre)
+        this._updateCenterMarker();
+
         setTimeout(() => {
             this._map?.invalidateSize();
         }, 100);
+    }
+
+    // Lives in Leaflet's markerPane (z-index 600) rather than the overlayPane,
+    // so the radar layer - which is replaced on every frame - cannot cover it.
+    private _updateCenterMarker(): void {
+        if (!this._map) return;
+
+        const [lat, lng] = this._getCenter();
+
+        if (this._centerMarker) {
+            const current = this._centerMarker.getLatLng();
+            // hass updates land here constantly; only move on a real change.
+            if (current.lat === lat && current.lng === lng) return;
+
+            this._centerMarker.setLatLng([lat, lng]);
+            return;
+        }
+
+        this._centerMarker = L.marker([lat, lng], {
+            icon: L.divIcon({
+                className: 'center-marker',
+                html: '<span class="center-marker-dot"></span>',
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            }),
+            interactive: false,
+            keyboard: false
+        }).addTo(this._map);
     }
 
     private _getCenter(): [number, number] {

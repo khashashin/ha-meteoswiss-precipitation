@@ -40,6 +40,7 @@ export declare class MeteoSwissRadarCard extends LitElement {
     private _api;
     private _mapContainer?;
     private _canvasLayer?;
+    private _centerMarker?;
     private _animationInterval?;
     private _refreshInterval?;
     private _mapInitializing;
@@ -59,6 +60,7 @@ export declare class MeteoSwissRadarCard extends LitElement {
     protected updated(changedProperties: PropertyValues): void;
     private _initializeMap;
     private _createMap;
+    private _updateCenterMarker;
     private _getCenter;
     private _fetchFrames;
     private _loadData;
