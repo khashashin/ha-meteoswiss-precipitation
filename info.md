@@ -9,6 +9,7 @@ A high-performance, interactive weather radar card for Home Assistant, featuring
 - **Interactive Controls**:
   - **Time Slider**: Drag to scrub through radar history and forecast.
   - **Play/Pause**: Animate the precipitation progression.
+  - **Reload**: Fetch the newest frames and restart the animation, without reloading the map or losing your pan/zoom.
   - **Instant Time Feedback**: Time label updates immediately as you drag the slider.
 - **Responsive**: Automatically adjusts height to fit your dashboard layout (supports `panel: true` or grid layouts).
 - **Smart Constraints**: Prevents panning/zooming away from the Swiss region so you never get lost.

@@ -124,6 +124,34 @@ export const styles = css`
     color: #1976d2;
   }
 
+  .controls button svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+
+  .controls button[disabled] {
+    cursor: default;
+  }
+
+  .controls button[disabled]:hover {
+    background: transparent;
+    color: #444;
+  }
+
+  .reload-button.spinning svg {
+    animation: meteoswiss-spin 1s linear infinite;
+  }
+
+  @keyframes meteoswiss-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   .controls input {
     flex-grow: 1;
     margin: 0 8px;

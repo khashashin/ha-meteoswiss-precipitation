@@ -75,6 +75,7 @@ export class MeteoSwissRadarCard extends LitElement {
     @state() private _currentFrameIndex: number = 0;
     @state() private _frames: MeteoSwissRadarFrame[] = []; // Animation frames from animation.json
     @state() private _isDefaultView: boolean = true;
+    @state() private _isReloading: boolean = false;
 
     private _api = new MeteoSwissAPI();
     private _mapContainer?: HTMLElement;
@@ -320,6 +321,7 @@ export class MeteoSwissRadarCard extends LitElement {
             }
 
             this._frames = frames;
+            this._pruneFrameCache(frames);
             this._currentFrameIndex = this._pickFrameIndex(frames);
             await this._renderFrame(this._currentFrameIndex);
             this._startAnimation();
@@ -536,6 +538,32 @@ export class MeteoSwissRadarCard extends LitElement {
         this._isPlaying = !this._isPlaying;
     }
 
+    // Manual "reload": pull a fresh frame list and restart playback from the
+    // configured start frame, i.e. put the card back where a freshly created
+    // card would be. Deliberately does not touch the map, so the user keeps
+    // whatever they had panned/zoomed to.
+    private async _reload(): Promise<void> {
+        if (this._isReloading) return;
+
+        this._isReloading = true;
+        this._stopTimers();
+        this._isPlaying = true;
+
+        try {
+            await this._loadData(); // re-fetches, re-picks the frame, restarts both timers
+        } finally {
+            this._isReloading = false;
+
+            // _loadData() bails out before restarting the timers if the fetch
+            // failed. Keep animating the frames we already have rather than
+            // leaving the card frozen.
+            if (this._frames.length && !this._animationInterval) {
+                this._startAnimation();
+                this._startAutoRefresh();
+            }
+        }
+    }
+
     private _throttledRenderFrame: (index: number) => void;
 
     constructor() {
@@ -623,8 +651,18 @@ export class MeteoSwissRadarCard extends LitElement {
           <div class="controls">
              <div class="time-label">${this._timeLabel}</div>
              <div class="controls-row">
-                 <button @click=${this._togglePlay}>
+                 <button @click=${this._togglePlay} title="Play/Pause">
                     ${this._isPlaying ? '⏸' : '▶'}
+                 </button>
+                 <button
+                    class="reload-button ${this._isReloading ? 'spinning' : ''}"
+                    @click=${this._reload}
+                    ?disabled=${this._isReloading}
+                    title="Reload radar data and restart the animation"
+                 >
+                    <svg viewBox="0 0 24 24">
+                        <path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" />
+                    </svg>
                  </button>
                  <input 
                     type="range" 
