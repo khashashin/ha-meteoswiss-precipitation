@@ -8,6 +8,8 @@ interface LovelaceCardConfig {
     center_longitude?: number;
     default_time?: DefaultTimeMode;
     proxy_url?: string;
+    locale?: string;
+    time_format?: '12' | '24';
 }
 export declare class MeteoSwissRadarCardEditor extends LitElement {
     hass?: any;

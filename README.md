@@ -61,6 +61,24 @@ default_time: now  # Optional: start on the frame closest to the current time
 | `zoom_level`   | integer | `12`       | Initial zoom level of the map. Min: 7, Max: 21.                             |
 | `default_time` | string  | `latest`   | Which frame the card starts on. `latest` uses the last frame (the end of the forecast window); `now` uses the frame closest to the current time. |
 | `proxy_url`    | string  | shared     | CORS proxy to fetch MeteoSwiss data through. See [CORS Proxy Information](#cors-proxy-information). |
+| `locale`       | string  | HA's       | BCP 47 tag used to format the time label, e.g. `de-CH`, `fr-CH`, `en-CH`. Overrides Home Assistant's language. |
+| `time_format`  | string  | HA's       | `24` or `12`. Overrides Home Assistant's clock setting. |
+
+### Date and time formatting
+
+By default the label follows Home Assistant: the language from your profile, and the **Time format** setting from **your user profile** (click your name in the sidebar → *Time format*), not from **Settings → System → General**.
+
+The catch is that Home Assistant's language `en` resolves to US formatting, so an English installation shows `Tuesday, 8/18/2026, 3:35 AM`. Set `locale` to get Swiss formatting while keeping whatever language you like:
+
+| `locale` | Result |
+| :------- | :----- |
+| *(unset, HA language `en`)* | `Tuesday, 8/18/2026, 3:35 AM` |
+| `en-CH` | `Tuesday, 18.08.2026, 03:35` |
+| `de-CH` | `Dienstag, 18.8.2026, 03:35` |
+| `fr-CH` | `mardi, 18.08.2026 03:35` |
+| `it-CH` | `martedì 18/08/2026, 03:35` |
+
+Home Assistant's profile **Date format** setting (DMY/MDY/YMD) is not applied — `Intl` cannot reorder a date without switching locale, and doing so would also switch the weekday's language. Use `locale` instead; it sets the date order, the clock and the weekday language coherently.
 
 **Note**: The map automatically centers on your Home Assistant zone location (latitude/longitude specified in HA configuration). If that is not set, it defaults to Bern, Switzerland.
 

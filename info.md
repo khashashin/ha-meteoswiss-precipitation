@@ -36,6 +36,10 @@ default_time: now  # Optional: start on the frame closest to the current time
 | `zoom_level`   | integer | `12`       | Initial zoom level of the map. Min: 7, Max: 21.                             |
 | `default_time` | string  | `latest`   | Which frame the card starts on. `latest` uses the last frame (the end of the forecast window); `now` uses the frame closest to the current time. |
 | `proxy_url`    | string  | shared     | CORS proxy to fetch MeteoSwiss data through, e.g. `https://your-worker.workers.dev/?url={url}`. Leave unset to use the shared public proxy. |
+| `locale`       | string  | HA's       | BCP 47 tag used to format the time label, e.g. `de-CH` → `Dienstag, 18.8.2026, 03:35`. Overrides Home Assistant's language. |
+| `time_format`  | string  | HA's       | `24` or `12`. Overrides Home Assistant's clock setting. |
+
+The time label follows Home Assistant's language and the **Time format** setting from your **user profile**. Because HA's `en` resolves to US formatting, an English installation shows `8/18/2026, 3:35 AM`; set `locale: en-CH` (or `de-CH`) for Swiss formatting.
 
 The card auto-plays at 1 fps and loops through the whole window, so `default_time` sets where playback begins, not where it stays. The frame list is re-fetched every 4 minutes; the card keeps the frame you were watching, or falls back to `default_time` if that frame has aged out of the window.
 

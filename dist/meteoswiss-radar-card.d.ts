@@ -11,8 +11,14 @@ declare global {
 }
 declare const DEFAULT_TIME_MODES: readonly ["latest", "now"];
 type DefaultTimeMode = (typeof DEFAULT_TIME_MODES)[number];
+declare const TIME_FORMATS: readonly ["12", "24"];
+type TimeFormat = (typeof TIME_FORMATS)[number];
 interface HomeAssistant {
     language: string;
+    locale?: {
+        language: string;
+        time_format?: 'language' | 'system' | '12' | '24';
+    };
     config: {
         latitude: number;
         longitude: number;
@@ -26,6 +32,8 @@ interface LovelaceCardConfig {
     center_longitude?: number;
     default_time?: DefaultTimeMode;
     proxy_url?: string;
+    locale?: string;
+    time_format?: TimeFormat;
 }
 export declare class MeteoSwissRadarCard extends LitElement {
     hass: HomeAssistant;
@@ -79,6 +87,8 @@ export declare class MeteoSwissRadarCard extends LitElement {
     private _throttledRenderFrame;
     constructor();
     private _formatTime;
+    private _resolveHour12;
+    private _systemUses12Hour;
     private _onSliderInput;
     private _onSliderChange;
     private _checkView;

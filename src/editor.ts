@@ -11,6 +11,8 @@ interface LovelaceCardConfig {
     center_longitude?: number;
     default_time?: DefaultTimeMode;
     proxy_url?: string;
+    locale?: string;
+    time_format?: '12' | '24';
 }
 
 @customElement('meteoswiss-radar-card-editor')
@@ -95,6 +97,29 @@ export class MeteoSwissRadarCardEditor extends LitElement {
                     <small>Leave empty to use the shared public proxy (rate limited).</small>
                 </div>
                 <div class="option">
+                    <label>Date/Time Locale (Optional)</label>
+                    <input
+                        type="text"
+                        placeholder="de-CH"
+                        .value=${this._config.locale || ''}
+                        @input=${this._valueChanged}
+                        .configValue=${'locale'}
+                    />
+                    <small>BCP 47 tag, e.g. <code>de-CH</code>, <code>fr-CH</code> or <code>en-CH</code>. Empty follows Home Assistant.</small>
+                </div>
+                <div class="option">
+                    <label>Clock</label>
+                    <select
+                        .value=${this._config.time_format || ''}
+                        @change=${this._valueChanged}
+                        .configValue=${'time_format'}
+                    >
+                        <option value="">Follow Home Assistant</option>
+                        <option value="24">24-hour</option>
+                        <option value="12">12-hour</option>
+                    </select>
+                </div>
+                <div class="option">
                     <label>Center Latitude (Optional)</label>
                     <input
                         type="number"
@@ -134,6 +159,10 @@ export class MeteoSwissRadarCardEditor extends LitElement {
         let newValue: number | string | undefined = value;
         if (configValue === 'zoom_level' || configValue === 'center_latitude' || configValue === 'center_longitude') {
             newValue = value === '' ? undefined : Number(value);
+        } else if (value === '') {
+            // Drop the key instead of writing an empty string, which would fail
+            // the card's config validation (e.g. time_format: "").
+            newValue = undefined;
         }
 
         this._config = {

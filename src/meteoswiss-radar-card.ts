@@ -71,9 +71,27 @@ const OFFICIAL_COLORS: Record<string, string> = {
     '#f70c00': '#FF1900', // 40-60 mm/h
 };
 
+// Card override for the clock. Home Assistant's own setting additionally has
+// 'language' and 'system', which are only meaningful as a default, not as an
+// override, so they are not offered here.
+const TIME_FORMATS = ['12', '24'] as const;
+type TimeFormat = (typeof TIME_FORMATS)[number];
+
+// hourCycle is missing from the ES2020 lib typings, but every browser that can
+// run Home Assistant reports it.
+interface ResolvedHourCycle extends Intl.ResolvedDateTimeFormatOptions {
+    hourCycle?: 'h11' | 'h12' | 'h23' | 'h24';
+}
+
 // Types for Home Assistant
 interface HomeAssistant {
     language: string;
+    // Present on modern Home Assistant: the user's own date/time preferences,
+    // which are separate from the language setting.
+    locale?: {
+        language: string;
+        time_format?: 'language' | 'system' | '12' | '24';
+    };
     config: {
         latitude: number;
         longitude: number;
@@ -88,6 +106,8 @@ interface LovelaceCardConfig {
     center_longitude?: number;
     default_time?: DefaultTimeMode;
     proxy_url?: string;
+    locale?: string;
+    time_format?: TimeFormat;
 }
 
 @customElement('meteoswiss-radar-card')
@@ -137,6 +157,19 @@ export class MeteoSwissRadarCard extends LitElement {
             throw new Error(
                 `Invalid default_time "${config.default_time}". Expected one of: ${DEFAULT_TIME_MODES.join(', ')}.`
             );
+        }
+        if (config.time_format !== undefined && !TIME_FORMATS.includes(config.time_format)) {
+            throw new Error(
+                `Invalid time_format "${config.time_format}". Expected one of: ${TIME_FORMATS.join(', ')}.`
+            );
+        }
+        if (config.locale !== undefined) {
+            // Catch a bad tag here rather than letting Intl throw mid-render.
+            try {
+                new Intl.DateTimeFormat(config.locale);
+            } catch {
+                throw new Error(`Invalid locale "${config.locale}". Use a BCP 47 tag such as de-CH.`);
+            }
         }
         this._config = {
             zoom_level: 12,
@@ -198,6 +231,12 @@ export class MeteoSwissRadarCard extends LitElement {
             // The pointer tracks the chosen coordinates whether or not the user
             // has panned away from them.
             this._updateCenterMarker();
+
+            // Re-stamp the label so a locale/clock change in the editor shows up
+            // immediately instead of at the next animation tick.
+            if (changedProperties.has('_config') && this._frames[this._currentFrameIndex]) {
+                this._timeLabel = this._formatTime(this._frames[this._currentFrameIndex].timestamp);
+            }
 
             if (this._isDefaultView) {
                 const [lat, lng] = this._getCenter();
@@ -640,15 +679,55 @@ export class MeteoSwissRadarCard extends LitElement {
 
     private _formatTime(timestamp: number): string {
         const date = new Date(timestamp * 1000);
-        const lang = this.hass?.language || 'en-CH'; // Default
-        return new Intl.DateTimeFormat(lang, {
+
+        // `hass.language` alone resolves "en" to en-US, which is why an English
+        // Home Assistant shows 8/18/2026, 3:35 AM rather than Swiss formatting.
+        const locale = this._config?.locale
+            || this.hass?.locale?.language
+            || this.hass?.language
+            || 'en-CH';
+
+        // Keep minute: 'numeric'. Pairing a 'numeric' hour with a '2-digit'
+        // minute makes Intl drop the hour padding in the CH locales (03:35
+        // becomes 3:35), which is the opposite of what it looks like it does.
+        const options: Intl.DateTimeFormatOptions = {
             weekday: 'long',
             year: 'numeric',
             month: 'numeric',
             day: 'numeric',
             hour: 'numeric',
             minute: 'numeric'
-        }).format(date);
+        };
+
+        const hour12 = this._resolveHour12();
+        if (hour12 !== undefined) {
+            options.hour12 = hour12;
+        }
+
+        return new Intl.DateTimeFormat(locale, options).format(date);
+    }
+
+    // Card config wins, then Home Assistant's own 12/24 hour setting. undefined
+    // means "let the locale decide", which is the right default.
+    private _resolveHour12(): boolean | undefined {
+        const configured = this._config?.time_format;
+        if (configured === '12') return true;
+        if (configured === '24') return false;
+
+        const fromHass = this.hass?.locale?.time_format;
+        if (fromHass === '12') return true;
+        if (fromHass === '24') return false;
+        if (fromHass === 'system') return this._systemUses12Hour();
+
+        return undefined;
+    }
+
+    private _systemUses12Hour(): boolean | undefined {
+        const resolved = new Intl.DateTimeFormat(navigator.language || undefined, { hour: 'numeric' })
+            .resolvedOptions() as ResolvedHourCycle;
+
+        if (!resolved.hourCycle) return undefined;
+        return resolved.hourCycle === 'h11' || resolved.hourCycle === 'h12';
     }
 
     private _onSliderInput(e: Event) {
