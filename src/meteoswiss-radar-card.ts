@@ -46,6 +46,31 @@ type DefaultTimeMode = (typeof DEFAULT_TIME_MODES)[number];
 // animation window.
 const FRAME_CACHE_LIMIT = 400;
 
+// MeteoSwiss serves the two halves of the animation with different palettes:
+// the INCA forecast frames already use the official colours published in
+// animation.json's `legend` block (the ones the MeteoSwiss app shows), while
+// the observed radar (RZC) frames use a slightly washed out variant. Snapping
+// the observed colours onto the legend makes the whole animation consistent
+// with the app.
+//
+// Keyed on colour rather than on the shapes' `l` field: `l` is an index into
+// each frame's own area list, not a global band, so the same colour turns up
+// under different levels from frame to frame.
+//
+// Anything absent from this table is passed through untouched - that covers the
+// non-precipitation overlays (#333e48, #ffffff) and the >60 mm/h band (#ac00db),
+// for which MeteoSwiss publishes no legend entry.
+const OFFICIAL_COLORS: Record<string, string> = {
+    '#9e849a': '#9A7E95', //  0-1  mm/h
+    '#2a00fa': '#0001FC', //  1-2  mm/h
+    '#2a933b': '#058C2D', //  2-4  mm/h
+    '#49ff36': '#05FF05', //  4-6  mm/h
+    '#fcff2d': '#FEFF01', //  6-10 mm/h
+    '#faca1e': '#FFC703', // 10-20 mm/h
+    '#f87c00': '#FF7D01', // 20-40 mm/h
+    '#f70c00': '#FF1900', // 40-60 mm/h
+};
+
 // Types for Home Assistant
 interface HomeAssistant {
     language: string;
@@ -516,7 +541,8 @@ export class MeteoSwissRadarCard extends LitElement {
         const features: any[] = [];
 
         data.areas.forEach(area => {
-            const color = '#' + area.color;
+            const rawColor = `#${area.color}`;
+            const color = OFFICIAL_COLORS[rawColor.toLowerCase()] ?? rawColor;
             area.shapes.forEach(shape => {
                 const latLngs = decodeShape(shape[0], data.coords);
                 // The decoder returns [lat, lng]. GeoJSON expects [lng, lat].
