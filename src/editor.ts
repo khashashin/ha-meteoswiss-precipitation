@@ -94,7 +94,7 @@ export class MeteoSwissRadarCardEditor extends LitElement {
                         @input=${this._valueChanged}
                         .configValue=${'proxy_url'}
                     />
-                    <small>Leave empty to use the shared public proxy (rate limited).</small>
+                    <small>Required: the old shared proxy now returns 403. See the README for a free Cloudflare Worker.</small>
                 </div>
                 <div class="option">
                     <label>Date/Time Locale (Optional)</label>

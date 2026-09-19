@@ -311,11 +311,17 @@ export class MeteoSwissRadarCard extends LitElement {
         // Track View State
         this._map.on('moveend zoomend', () => this._checkView());
 
-        // 2. Base Layer
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CARTO',
-            subdomains: 'abcd',
-            maxZoom: 21
+        // 2. Base Layer - swisstopo's grey national map.
+        // CARTO began stamping "API KEY REQUIRED" across its free tiles, so it is
+        // no longer usable without an account. swisstopo needs no key and no
+        // registration (geo.admin.ch terms: free, fair use, attribution), and it
+        // covers exactly the area this card constrains itself to.
+        // Tiles exist up to z19; Leaflet upscales them for z20-21 rather than
+        // requesting tiles the service answers with 400.
+        L.tileLayer('https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg', {
+            attribution: '&copy; <a href="https://www.swisstopo.admin.ch" target="_blank" rel="noopener">swisstopo</a>',
+            maxZoom: 21,
+            maxNativeZoom: 19
         }).addTo(this._map);
 
         // 3. Add Inverse Mask (Grey out non-Swiss areas)

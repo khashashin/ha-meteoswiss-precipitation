@@ -49,6 +49,8 @@ The map automatically centers on your Home Assistant zone location (latitude/lon
 
 This card fetches real-time precipitation data from MeteoSwiss's public API. MeteoSwiss serves that data without CORS headers, so a browser cannot fetch it directly and requests are routed through a CORS proxy.
 
-The default is a shared public proxy, which is rate limited across all users of this card. If you see HTTP 429 errors, set `proxy_url` to a proxy of your own. The README has a [step-by-step guide for setting up a free Cloudflare Worker](https://github.com/khashashin/ha-meteoswiss-precipitation#running-your-own-proxy-cloudflare-workers-free-tier) — about five minutes, no domain or credit card needed.
+**`proxy_url` is required.** The card used to fall back to the public `corsproxy.io`, but that service has retired anonymous access and now answers every request with `403`. If the card shows *"CORS proxy refused the request (403)"*, set `proxy_url` to a proxy of your own. The README has a [step-by-step guide for setting up a free Cloudflare Worker](https://github.com/khashashin/ha-meteoswiss-precipitation#running-your-own-proxy-cloudflare-workers-free-tier) — about five minutes, no domain or credit card needed.
+
+The base map comes from swisstopo (`wmts.geo.admin.ch`), which needs no API key or registration.
 
 Radar frames are cached once fetched, so leaving the card open does not keep re-downloading the same frames.

@@ -62,7 +62,7 @@ default_time: now  # Optional: start on the frame closest to the current time
 | `type`         | string  | **Required** | Must be `custom:meteoswiss-radar-card`.                                   |
 | `zoom_level`   | integer | `12`       | Initial zoom level of the map. Min: 7, Max: 21.                             |
 | `default_time` | string  | `latest`   | Which frame the card starts on. `latest` uses the last frame (the end of the forecast window); `now` uses the frame closest to the current time. |
-| `proxy_url`    | string  | shared     | CORS proxy to fetch MeteoSwiss data through. See [CORS Proxy Information](#cors-proxy-information). |
+| `proxy_url`    | string  | **Required** | CORS proxy to fetch MeteoSwiss data through. See [CORS Proxy Information](#cors-proxy-information). |
 | `locale`       | string  | HA's       | BCP 47 tag used to format the time label, e.g. `de-CH`, `fr-CH`, `en-CH`. Overrides Home Assistant's language. |
 | `time_format`  | string  | HA's       | `24` or `12`. Overrides Home Assistant's clock setting. |
 
@@ -92,7 +92,11 @@ The frame list is re-fetched every 4 minutes. When that happens the card stays o
 
 MeteoSwiss serves its radar data without an `Access-Control-Allow-Origin` header (and answers `OPTIONS` with `405`), so a browser cannot fetch it directly. A proxy is required.
 
-By default the card uses the shared public proxy `corsproxy.io`. That is a free service shared by every user of this card, so **you may hit HTTP 429 (rate limited)**. If that happens, point the card at a proxy of your own:
+> **`proxy_url` is now effectively required.** The card used to fall back to the public `corsproxy.io`, but that service has retired anonymous access and answers every request with
+> `403 {"error":"keyless_legacy_url","message":"Anonymous legacy proxy URLs are no longer supported. Use the CORSPROXY API with an API key"}`.
+> If the card shows *"CORS proxy refused the request (403)"*, that is this. Set up your own proxy below — it takes about five minutes and costs nothing.
+
+Point the card at a proxy of your own:
 
 ```yaml
 type: "custom:meteoswiss-radar-card"

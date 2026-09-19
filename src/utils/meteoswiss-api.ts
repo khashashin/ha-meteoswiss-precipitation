@@ -42,6 +42,18 @@ export class MeteoSwissAPI {
         });
     }
 
+    // A bare "403" sends people hunting for a MeteoSwiss outage, when in practice
+    // it is the shared proxy refusing anonymous traffic. Name the real cause.
+    private describeFailure(response: Response, what: string): string {
+        const usingSharedProxy = !this.proxyTemplate && !this.isLocal;
+
+        if (usingSharedProxy && (response.status === 403 || response.status === 429)) {
+            return `CORS proxy refused the request (${response.status}). `
+                + 'The shared proxy now requires an API key - set proxy_url in the card config. See the README.';
+        }
+        return `Failed to fetch ${what}: ${response.status} ${response.statusText}`;
+    }
+
     async getVersions(): Promise<Record<string, string>> {
         // The only URL here that is not immutable (MeteoSwiss serves it with
         // max-age=60), so this is the one request that must skip the HTTP cache.
@@ -49,7 +61,7 @@ export class MeteoSwissAPI {
         const response = await this.fetchWithCorsProxy(url, 'no-cache');
 
         if (!response.ok) {
-            throw new Error(`Failed to fetch versions: ${response.status} ${response.statusText}`);
+            throw new Error(this.describeFailure(response, 'versions'));
         }
         return response.json();
     }
@@ -59,7 +71,7 @@ export class MeteoSwissAPI {
         const response = await this.fetchWithCorsProxy(url);
 
         if (!response.ok) {
-            throw new Error(`Failed to fetch animation data: ${response.status} ${response.statusText}`);
+            throw new Error(this.describeFailure(response, 'animation data'));
         }
         return response.json();
     }

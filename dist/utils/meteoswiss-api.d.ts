@@ -6,6 +6,7 @@ export declare class MeteoSwissAPI {
     setProxyUrl(proxyUrl?: string): void;
     private buildProxyUrl;
     private fetchWithCorsProxy;
+    private describeFailure;
     getVersions(): Promise<Record<string, string>>;
     getAnimationData(timestamp: string): Promise<MeteoSwissAnimationData>;
     fetchRadarFrame(radarUrl: string): Promise<Response>;
