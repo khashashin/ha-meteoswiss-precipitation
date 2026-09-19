@@ -34,6 +34,7 @@ interface LovelaceCardConfig {
     proxy_url?: string;
     locale?: string;
     time_format?: TimeFormat;
+    basemap?: string;
 }
 export declare class MeteoSwissRadarCard extends LitElement {
     hass: HomeAssistant;
@@ -46,10 +47,13 @@ export declare class MeteoSwissRadarCard extends LitElement {
     private _isDefaultView;
     private _isReloading;
     private _needsProxySetup;
+    private _activeBasemap;
     private _api;
     private _mapContainer?;
     private _canvasLayer?;
     private _centerMarker?;
+    private _maskLayer?;
+    private _tileLayers;
     private _animationInterval?;
     private _refreshInterval?;
     private _mapInitializing;
@@ -69,6 +73,9 @@ export declare class MeteoSwissRadarCard extends LitElement {
     protected updated(changedProperties: PropertyValues): void;
     private _initializeMap;
     private _createMap;
+    private _resolveBasemapKey;
+    private _applyMaskStyle;
+    private _setBasemap;
     private _updateCenterMarker;
     private _getCenter;
     private _fetchFrames;

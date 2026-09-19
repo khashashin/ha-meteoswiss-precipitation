@@ -1,5 +1,6 @@
 import { LitElement, html, css, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { BASEMAPS } from './utils/basemaps';
 
 type DefaultTimeMode = 'latest' | 'now';
 
@@ -13,6 +14,7 @@ interface LovelaceCardConfig {
     proxy_url?: string;
     locale?: string;
     time_format?: '12' | '24';
+    basemap?: string;
 }
 
 @customElement('meteoswiss-radar-card-editor')
@@ -73,6 +75,23 @@ export class MeteoSwissRadarCardEditor extends LitElement {
                         @input=${this._valueChanged}
                         .configValue=${'zoom_level'}
                     />
+                </div>
+                <div class="option">
+                    <label>Base Map</label>
+                    <select
+                        @change=${this._valueChanged}
+                        .configValue=${'basemap'}
+                    >
+                        <option value="" ?selected=${!this._config.basemap}>
+                            Default (swisstopo Grey)
+                        </option>
+                        ${Object.entries(BASEMAPS).map(([key, def]) => html`
+                            <option value=${key} ?selected=${this._config?.basemap === key}>
+                                ${def.name}
+                            </option>
+                        `)}
+                    </select>
+                    <small>Viewers can also switch layers with the control on the map.</small>
                 </div>
                 <div class="option">
                     <label>Start Frame</label>

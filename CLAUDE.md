@@ -71,7 +71,12 @@ The integration solves CORS issues by running server-side in Home Assistant, whi
 - `d` string updates grid position: pairs of chars, each char - 77 ('M') = delta
 
 **Leaflet Integration**:
-- Base map is swisstopo `ch.swisstopo.pixelkarte-grau` via `wmts.geo.admin.ch` (EPSG:3857 XYZ). No API key, no registration, `ACAO: *`; geo.admin.ch terms are fair use with "© swisstopo" attribution. **CARTO was dropped because it now stamps "API KEY REQUIRED" across its keyless tiles.** swisstopo serves z7–z19 and returns **400** above that, so the layer sets `maxNativeZoom: 19` while the map keeps `maxZoom: 21`
+- Base maps live in `src/utils/basemaps.ts` (`BASEMAPS`, `DEFAULT_BASEMAP`), shared by the card and the editor — keep it a separate module, since a static import from `editor.ts` back into the card would be a cycle (the card imports the editor dynamically)
+- All five providers are keyless and unregistered by design. **CARTO was dropped because it now stamps "API KEY REQUIRED" across its keyless tiles** (both `light_all` and `dark_all`), and Stadia/Stamen dark maps require a key
+- `maxNativeZoom` per layer is measured, not assumed: swisstopo grey/colour and OSM stop at 19, SWISSIMAGE and the Esri dark canvas at 20. The map keeps `maxZoom: 21` so Leaflet upscales rather than requesting tiles that 400
+- **Do not raise the Esri ceiling on a 200 alone**: at z21 `World_Dark_Gray_Base` answers `200 image/jpeg` with an identical 2521-byte grey "Map data not yet available" placeholder at every location. Check tile bytes/contents, not just the status
+- `_applyMaskStyle()` darkens the non-Swiss veil (`#000` @ 0.6 instead of `#888` @ 0.5) on layers flagged `dark: true` (aerial and dark), where a light grey veil disappears
+- Layer selection: `L.control.layers` at `bottomright` (topleft is Leaflet's zoom control, topright is the card's reset button). `baselayerchange` records the pick in `_activeBasemap`, which survives detach/re-attach; `_setBasemap()` handles a `basemap` change made in the config editor and Leaflet's control follows the layeradd/layerremove events
 - Map initialization must wait for external CSS to load (unpkg.com)
 - Renders in shadow DOM, requires CSS injection
 - Uses maxBounds to constrain view to Switzerland region

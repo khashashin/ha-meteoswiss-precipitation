@@ -6,6 +6,7 @@ import { MeteoSwissAPI, MeteoSwissRadarFrame } from './utils/meteoswiss-api';
 import { decodeShape, MeteoSwissRadarJSON } from './utils/decoder';
 import { throttle } from './utils/throttle';
 import { SWISS_BOUNDARY_GEOJSON } from './utils/switzerland-boundary';
+import { BASEMAPS, DEFAULT_BASEMAP } from './utils/basemaps';
 
 
 // Declare custom card for Home Assistant UI
@@ -45,6 +46,8 @@ type DefaultTimeMode = (typeof DEFAULT_TIME_MODES)[number];
 // Frames average ~17 KB, so the cap below is a few MB of headroom over a full
 // animation window.
 const FRAME_CACHE_LIMIT = 400;
+
+
 
 // MeteoSwiss serves the two halves of the animation with different palettes:
 // the INCA forecast frames already use the official colours published in
@@ -108,6 +111,7 @@ interface LovelaceCardConfig {
     proxy_url?: string;
     locale?: string;
     time_format?: TimeFormat;
+    basemap?: string;
 }
 
 @customElement('meteoswiss-radar-card')
@@ -122,11 +126,14 @@ export class MeteoSwissRadarCard extends LitElement {
     @state() private _isDefaultView: boolean = true;
     @state() private _isReloading: boolean = false;
     @state() private _needsProxySetup: boolean = false;
+    @state() private _activeBasemap: string = '';
 
     private _api = new MeteoSwissAPI();
     private _mapContainer?: HTMLElement;
     private _canvasLayer?: L.Layer;
     private _centerMarker?: L.Marker;
+    private _maskLayer?: L.Polygon;
+    private _tileLayers = new Map<string, L.TileLayer>();
     private _animationInterval?: number;
     private _refreshInterval?: number;
     private _mapInitializing = false;
@@ -162,6 +169,11 @@ export class MeteoSwissRadarCard extends LitElement {
         if (config.time_format !== undefined && !TIME_FORMATS.includes(config.time_format)) {
             throw new Error(
                 `Invalid time_format "${config.time_format}". Expected one of: ${TIME_FORMATS.join(', ')}.`
+            );
+        }
+        if (config.basemap !== undefined && !(config.basemap in BASEMAPS)) {
+            throw new Error(
+                `Invalid basemap "${config.basemap}". Expected one of: ${Object.keys(BASEMAPS).join(', ')}.`
             );
         }
         if (config.locale !== undefined) {
@@ -223,6 +235,10 @@ export class MeteoSwissRadarCard extends LitElement {
         this._map = undefined;
         this._canvasLayer = undefined;
         this._centerMarker = undefined;
+        this._maskLayer = undefined;
+        // _activeBasemap deliberately survives: the map is rebuilt on re-attach
+        // and should come back on the layer the user picked.
+        this._tileLayers.clear();
     }
 
     protected updated(changedProperties: PropertyValues): void {
@@ -237,6 +253,13 @@ export class MeteoSwissRadarCard extends LitElement {
             // immediately instead of at the next animation tick.
             if (changedProperties.has('_config') && this._frames[this._currentFrameIndex]) {
                 this._timeLabel = this._formatTime(this._frames[this._currentFrameIndex].timestamp);
+            }
+
+            // Picking a different basemap in the editor overrides the runtime choice.
+            if (changedProperties.has('_config')
+                && this._config.basemap
+                && this._config.basemap !== this._activeBasemap) {
+                this._setBasemap(this._config.basemap);
             }
 
             if (this._isDefaultView) {
@@ -312,18 +335,34 @@ export class MeteoSwissRadarCard extends LitElement {
         // Track View State
         this._map.on('moveend zoomend', () => this._checkView());
 
-        // 2. Base Layer - swisstopo's grey national map.
-        // CARTO began stamping "API KEY REQUIRED" across its free tiles, so it is
-        // no longer usable without an account. swisstopo needs no key and no
-        // registration (geo.admin.ch terms: free, fair use, attribution), and it
-        // covers exactly the area this card constrains itself to.
-        // Tiles exist up to z19; Leaflet upscales them for z20-21 rather than
-        // requesting tiles the service answers with 400.
-        L.tileLayer('https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg', {
-            attribution: '&copy; <a href="https://www.swisstopo.admin.ch" target="_blank" rel="noopener">swisstopo</a>',
-            maxZoom: 21,
-            maxNativeZoom: 19
-        }).addTo(this._map);
+        // 2. Base Layers + selector
+        const selectorLayers: Record<string, L.Layer> = {};
+        this._tileLayers.clear();
+
+        for (const [key, def] of Object.entries(BASEMAPS)) {
+            const layer = L.tileLayer(def.url, {
+                attribution: def.attribution,
+                maxZoom: 21,
+                maxNativeZoom: def.maxNativeZoom
+            });
+            this._tileLayers.set(key, layer);
+            selectorLayers[def.name] = layer;
+        }
+
+        const activeKey = this._resolveBasemapKey();
+        this._activeBasemap = activeKey;
+        this._tileLayers.get(activeKey)?.addTo(this._map);
+
+        L.control.layers(selectorLayers, undefined, { position: 'bottomright' }).addTo(this._map);
+
+        // Remember a runtime choice so it survives a detach/re-attach, and
+        // restyle the mask when switching between light and dark maps.
+        this._map.on('baselayerchange', (event: L.LayersControlEvent) => {
+            const picked = Object.keys(BASEMAPS).find(key => BASEMAPS[key].name === event.name);
+            if (!picked) return;
+            this._activeBasemap = picked;
+            this._applyMaskStyle();
+        });
 
         // 3. Add Inverse Mask (Grey out non-Swiss areas)
         // Note: SWISS_BOUNDARY_COORDINATES is Array<Ring>, where Ring is Array<[Lng, Lat]>
@@ -345,12 +384,11 @@ export class MeteoSwissRadarCard extends LitElement {
 
         // Create Polygon with hole (Leaflet takes arrays of coordinates: [OuterRing, InnerHole1, ...])
         // We cast to any to avoid TypeScript limitations with complex nested arrays in Leaflet typings
-        L.polygon([worldCoords, ...swissRings] as any, {
+        this._maskLayer = L.polygon([worldCoords, ...swissRings] as any, {
             color: 'transparent',
-            fillColor: '#888888',
-            fillOpacity: 0.5,
             interactive: false // Click-through
         }).addTo(this._map);
+        this._applyMaskStyle();
 
         // 4. Mark the configured location (config override, else the Home
         // Assistant zone, else the Swiss centre)
@@ -359,6 +397,47 @@ export class MeteoSwissRadarCard extends LitElement {
         setTimeout(() => {
             this._map?.invalidateSize();
         }, 100);
+    }
+
+    // A runtime pick from the layer selector wins, then the configured default.
+    private _resolveBasemapKey(): string {
+        if (this._activeBasemap && BASEMAPS[this._activeBasemap]) return this._activeBasemap;
+
+        const configured = this._config?.basemap;
+        if (configured && BASEMAPS[configured]) return configured;
+
+        return DEFAULT_BASEMAP;
+    }
+
+    // A 50% grey veil disappears against a dark or aerial base map, so darken it
+    // there and keep the lighter grey over the light maps.
+    private _applyMaskStyle(): void {
+        if (!this._maskLayer) return;
+
+        const isDark = Boolean(BASEMAPS[this._resolveBasemapKey()]?.dark);
+        this._maskLayer.setStyle({
+            fillColor: isDark ? '#000000' : '#888888',
+            fillOpacity: isDark ? 0.6 : 0.5
+        });
+    }
+
+    // Used when the basemap is changed in the config editor. Leaflet's layers
+    // control watches layeradd/layerremove, so its radio follows along.
+    private _setBasemap(key: string): void {
+        const next = this._tileLayers.get(key);
+        if (!this._map || !next) return;
+
+        if (!this._map.hasLayer(next)) {
+            for (const [otherKey, layer] of this._tileLayers) {
+                if (otherKey !== key && this._map.hasLayer(layer)) {
+                    this._map.removeLayer(layer);
+                }
+            }
+            next.addTo(this._map);
+        }
+
+        this._activeBasemap = key;
+        this._applyMaskStyle();
     }
 
     // Lives in Leaflet's markerPane (z-index 600) rather than the overlayPane,

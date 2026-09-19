@@ -12,6 +12,7 @@ A high-performance, interactive weather radar card for Home Assistant, featuring
 *   **High Resolution**: Uses high-quality vector boundaries for precise masking.
 *   **Location Pointer**: A small dot marks the coordinates the card is centred on — your Home Assistant location, or the configured override.
 *   **Official Colours**: Uses the MeteoSwiss precipitation palette (0.2 → 60 mm/h), so the card matches what the MeteoSwiss app shows.
+*   **Base Map Layers**: Switch between swisstopo grey, colour and aerial, OpenStreetMap, and a dark map — from a control on the map itself. No API keys.
 *   **Interactive Controls**:
     *   **Time Slider**: Drag to scrub through radar history and forecast.
     *   **Play/Pause**: Animate the precipitation progression.
@@ -65,6 +66,28 @@ default_time: now  # Optional: start on the frame closest to the current time
 | `proxy_url`    | string  | **Required** | CORS proxy to fetch MeteoSwiss data through. See [CORS Proxy Information](#cors-proxy-information). |
 | `locale`       | string  | HA's       | BCP 47 tag used to format the time label, e.g. `de-CH`, `fr-CH`, `en-CH`. Overrides Home Assistant's language. |
 | `time_format`  | string  | HA's       | `24` or `12`. Overrides Home Assistant's clock setting. |
+| `basemap`      | string  | `swisstopo-grey` | Base map shown on load. See [Base map layers](#base-map-layers). |
+
+### Base map layers
+
+Pick a layer from the control in the bottom-right corner of the map, or set the one the card opens with:
+
+```yaml
+type: "custom:meteoswiss-radar-card"
+basemap: dark
+```
+
+| `basemap` | Layer | Source | Detail to zoom |
+| :-------- | :---- | :----- | :------------- |
+| `swisstopo-grey` | swisstopo Grey (default) | swisstopo | 19 |
+| `swisstopo-color` | swisstopo Colour | swisstopo | 19 |
+| `swisstopo-aerial` | swisstopo Aerial | swisstopo (SWISSIMAGE) | 20 |
+| `osm` | OpenStreetMap | OpenStreetMap contributors | 19 |
+| `dark` | Dark | Esri World Dark Gray Canvas | 20 |
+
+Every layer works without an API key or registration, which is deliberate — CARTO, the card's previous base map, started watermarking its keyless tiles. Beyond the zoom in the last column the map keeps zooming and simply scales the last real tile, so detail stops improving but nothing goes blank. The grey veil over non-Swiss areas automatically darkens on the aerial and dark layers.
+
+A layer picked from the map control lasts for that dashboard session; reloading returns to the `basemap` in the config.
 
 ### Date and time formatting
 

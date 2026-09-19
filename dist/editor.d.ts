@@ -10,6 +10,7 @@ interface LovelaceCardConfig {
     proxy_url?: string;
     locale?: string;
     time_format?: '12' | '24';
+    basemap?: string;
 }
 export declare class MeteoSwissRadarCardEditor extends LitElement {
     hass?: any;

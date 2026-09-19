@@ -8,6 +8,7 @@ A high-performance, interactive weather radar card for Home Assistant, featuring
 - **High Resolution**: Uses high-quality vector boundaries for precise masking.
 - **Location Pointer**: A small dot marks the coordinates the card is centred on — your Home Assistant location, or the configured override.
 - **Official Colours**: Uses the MeteoSwiss precipitation palette (0.2 → 60 mm/h), so the card matches what the MeteoSwiss app shows.
+- **Base Map Layers**: Switch between swisstopo grey, colour and aerial, OpenStreetMap, and a dark map — from a control on the map itself. No API keys.
 - **Interactive Controls**:
   - **Time Slider**: Drag to scrub through radar history and forecast.
   - **Play/Pause**: Animate the precipitation progression.
@@ -38,6 +39,7 @@ default_time: now  # Optional: start on the frame closest to the current time
 | `proxy_url`    | string  | shared     | CORS proxy to fetch MeteoSwiss data through, e.g. `https://your-worker.workers.dev/?url={url}`. Leave unset to use the shared public proxy. |
 | `locale`       | string  | HA's       | BCP 47 tag used to format the time label, e.g. `de-CH` → `Dienstag, 18.8.2026, 03:35`. Overrides Home Assistant's language. |
 | `time_format`  | string  | HA's       | `24` or `12`. Overrides Home Assistant's clock setting. |
+| `basemap`      | string  | `swisstopo-grey` | Base map shown on load: `swisstopo-grey`, `swisstopo-color`, `swisstopo-aerial`, `osm` or `dark`. Viewers can switch from the control on the map. |
 
 The time label follows Home Assistant's language and the **Time format** setting from your **user profile**. Because HA's `en` resolves to US formatting, an English installation shows `8/18/2026, 3:35 AM`; set `locale: en-CH` (or `de-CH`) for Swiss formatting.
 
