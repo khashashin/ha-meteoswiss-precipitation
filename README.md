@@ -92,9 +92,10 @@ The frame list is re-fetched every 4 minutes. When that happens the card stays o
 
 MeteoSwiss serves its radar data without an `Access-Control-Allow-Origin` header (and answers `OPTIONS` with `405`), so a browser cannot fetch it directly. A proxy is required.
 
-> **`proxy_url` is now effectively required.** The card used to fall back to the public `corsproxy.io`, but that service has retired anonymous access and answers every request with
+> **`proxy_url` is required.** The card used to fall back to the public `corsproxy.io`, but that service has retired anonymous access and answers every request with
 > `403 {"error":"keyless_legacy_url","message":"Anonymous legacy proxy URLs are no longer supported. Use the CORSPROXY API with an API key"}`.
-> If the card shows *"CORS proxy refused the request (403)"*, that is this. Set up your own proxy below — it takes about five minutes and costs nothing.
+>
+> Until you set `proxy_url`, the card draws the map and shows a **One-time setup needed** notice over it instead of attempting a request that cannot succeed. (An older config still pointing at the retired shared proxy shows *"CORS proxy refused the request (403)"* instead.) Setting up your own proxy takes about five minutes and costs nothing.
 
 Point the card at a proxy of your own:
 

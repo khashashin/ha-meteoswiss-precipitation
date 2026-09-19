@@ -4,6 +4,7 @@ export declare class MeteoSwissAPI {
     private readonly CORS_PROXY;
     private proxyTemplate?;
     setProxyUrl(proxyUrl?: string): void;
+    needsProxyConfig(): boolean;
     private buildProxyUrl;
     private fetchWithCorsProxy;
     private describeFailure;

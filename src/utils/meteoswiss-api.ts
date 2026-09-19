@@ -16,6 +16,14 @@ export class MeteoSwissAPI {
         this.proxyTemplate = trimmed ? trimmed : undefined;
     }
 
+    // True when there is no usable way to reach MeteoSwiss: not running against
+    // the local dev proxy, and no proxy_url configured. The old shared proxy is
+    // not a fallback any more - it answers 403 - so the card should say so
+    // rather than fire a request that cannot succeed.
+    needsProxyConfig(): boolean {
+        return !this.isLocal && !this.proxyTemplate;
+    }
+
     private buildProxyUrl(url: string): string {
         const template = this.proxyTemplate ?? this.CORS_PROXY;
 

@@ -194,6 +194,61 @@ export const styles = css`
       border-radius: 2px;
   }
 
+  /* Shown over the map when no proxy_url is configured. */
+  .setup-notice {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    display: flex;
+    gap: 12px;
+    width: min(380px, calc(100% - 32px));
+    box-sizing: border-box;
+    padding: 16px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    color: #333;
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: left;
+  }
+
+  .setup-notice > svg {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    fill: #1976d2;
+  }
+
+  .setup-notice strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+
+  .setup-notice p {
+    margin: 0 0 8px;
+  }
+
+  .setup-notice code {
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.07);
+    font-size: 12px;
+  }
+
+  .setup-notice a {
+    color: #1976d2;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .setup-notice a:hover {
+    text-decoration: underline;
+  }
+
   /* Pointer marking the configured location. Leaflet's divIcon default
      className is replaced, so none of the .leaflet-div-icon box styling
      applies - only the dot below is drawn. */

@@ -121,6 +121,7 @@ export class MeteoSwissRadarCard extends LitElement {
     @state() private _frames: MeteoSwissRadarFrame[] = []; // Animation frames from animation.json
     @state() private _isDefaultView: boolean = true;
     @state() private _isReloading: boolean = false;
+    @state() private _needsProxySetup: boolean = false;
 
     private _api = new MeteoSwissAPI();
     private _mapContainer?: HTMLElement;
@@ -419,6 +420,17 @@ export class MeteoSwissRadarCard extends LitElement {
     }
 
     private async _loadData(): Promise<void> {
+        // Nothing can be fetched without a proxy, so show the setup notice
+        // instead of a request that is guaranteed to fail. Re-evaluated on every
+        // load, so saving a proxy_url in the editor clears it immediately.
+        if (this._api.needsProxyConfig()) {
+            this._needsProxySetup = true;
+            this._timeLabel = 'Proxy not configured';
+            this._stopTimers();
+            return;
+        }
+        this._needsProxySetup = false;
+
         try {
             this._timeLabel = 'Fetching radar data...';
             const frames = await this._fetchFrames();
@@ -795,10 +807,12 @@ export class MeteoSwissRadarCard extends LitElement {
                     <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
                 </svg>
             </button>
+            ${this._needsProxySetup ? this._renderProxySetup() : ''}
           </div>
-          
+
           <div class="controls">
              <div class="time-label">${this._timeLabel}</div>
+             ${this._frames.length ? html`
              <div class="controls-row">
                  <button @click=${this._togglePlay} title="Play/Pause">
                     ${this._isPlaying ? '⏸' : '▶'}
@@ -821,10 +835,36 @@ export class MeteoSwissRadarCard extends LitElement {
                     @input=${this._onSliderInput}
                     @change=${this._onSliderChange}
                  >
-             </div>
+             </div>` : ''}
           </div>
         </div>
       </ha-card>
+        `;
+    }
+
+    // Shown instead of a doomed request when no proxy_url is set. The base map
+    // still renders - only the MeteoSwiss data needs the proxy - so this sits
+    // over the map rather than replacing the whole card.
+    private _renderProxySetup() {
+        return html`
+            <div class="setup-notice">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
+                </svg>
+                <div class="setup-notice-body">
+                    <strong>One-time setup needed</strong>
+                    <p>
+                        MeteoSwiss blocks direct browser requests, so the card needs a CORS
+                        proxy. The shared one it used to fall back on now requires an API key.
+                    </p>
+                    <p>Set <code>proxy_url</code> in the card configuration.</p>
+                    <a
+                        href="https://github.com/khashashin/ha-meteoswiss-precipitation#running-your-own-proxy-cloudflare-workers-free-tier"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >Set up a free proxy (5 minutes)</a>
+                </div>
+            </div>
         `;
     }
 

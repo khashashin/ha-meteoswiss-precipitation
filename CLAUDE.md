@@ -39,6 +39,8 @@ The integration solves CORS issues by running server-side in Home Assistant, whi
    - **CORS is still enforced by MeteoSwiss** (verified: no `Access-Control-Allow-Origin` on `product/output/*`, `OPTIONS` returns 405), so a proxy is mandatory in production
    - **`corsproxy.io` (the historical default) is dead**: it retired anonymous access and returns `403 keyless_legacy_url` for every request, so `proxy_url` is now effectively required. `describeFailure()` turns a 403/429 on the shared proxy into an actionable message instead of a bare status code
    - `{url}` placeholder in `proxy_url` is substituted with the encoded target, otherwise the encoded target is appended
+   - `needsProxyConfig()` (no `proxy_url` and not local dev) short-circuits `_loadData()`: the card sets `_needsProxySetup` and renders the setup notice over the map instead of firing a doomed request. Re-evaluated on every load, so saving a `proxy_url` in the editor clears it
+   - Known edge: `isLocal` is hostname-based, so a browser pointed at `http://localhost:8123` is treated as the dev server and gets same-origin 404s rather than the setup notice
    - Only `versions.json` uses `cache: 'no-cache'` (`max-age=60`). Animation and frame URLs are timestamped/immutable (`max-age=86400`) and must use the default HTTP cache — forcing `no-cache` on those is what generated ~1 request/second
 
 3. **Data Decoder** (`src/utils/decoder.ts`):
