@@ -6,7 +6,7 @@ import { MeteoSwissAPI, MeteoSwissRadarFrame } from './utils/meteoswiss-api';
 import { decodeShape, MeteoSwissRadarJSON } from './utils/decoder';
 import { throttle } from './utils/throttle';
 import { SWISS_BOUNDARY_GEOJSON } from './utils/switzerland-boundary';
-import { BASEMAPS, DEFAULT_BASEMAP } from './utils/basemaps';
+import { BASEMAPS, DEFAULT_BASEMAP, RETIRED_BASEMAPS } from './utils/basemaps';
 
 
 // Declare custom card for Home Assistant UI
@@ -172,9 +172,17 @@ export class MeteoSwissRadarCard extends LitElement {
             );
         }
         if (config.basemap !== undefined && !(config.basemap in BASEMAPS)) {
-            throw new Error(
-                `Invalid basemap "${config.basemap}". Expected one of: ${Object.keys(BASEMAPS).join(', ')}.`
-            );
+            if (RETIRED_BASEMAPS.has(config.basemap)) {
+                // Don't break an existing dashboard over a layer we withdrew.
+                console.warn(
+                    `meteoswiss-radar-card: basemap "${config.basemap}" is no longer available, `
+                    + `falling back to "${DEFAULT_BASEMAP}".`
+                );
+            } else {
+                throw new Error(
+                    `Invalid basemap "${config.basemap}". Expected one of: ${Object.keys(BASEMAPS).join(', ')}.`
+                );
+            }
         }
         if (config.locale !== undefined) {
             // Catch a bad tag here rather than letting Intl throw mid-render.

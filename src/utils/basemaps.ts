@@ -36,12 +36,6 @@ export const BASEMAPS: Record<string, BasemapDefinition> = {
         maxNativeZoom: 20,
         dark: true
     },
-    'osm': {
-        name: 'OpenStreetMap',
-        url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
-        maxNativeZoom: 19
-    },
     'dark': {
         name: 'Dark',
         url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
@@ -52,3 +46,12 @@ export const BASEMAPS: Record<string, BasemapDefinition> = {
 };
 
 export const DEFAULT_BASEMAP = 'swisstopo-grey';
+
+// 'osm' shipped briefly. OpenStreetMap's volunteer tile servers started serving
+// 403 "Access blocked - App is not following the tile usage policy" to users of
+// this card, and their policy genuinely does not cover it: bulk/app access is
+// excluded and callers must identify themselves with a User-Agent, which a
+// browser cannot set. Blocking is per-IP, so it works for some people and not
+// others - worse than not offering it. Configs still naming it fall back to the
+// default rather than erroring.
+export const RETIRED_BASEMAPS = new Set(['osm']);

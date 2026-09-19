@@ -12,7 +12,7 @@ A high-performance, interactive weather radar card for Home Assistant, featuring
 *   **High Resolution**: Uses high-quality vector boundaries for precise masking.
 *   **Location Pointer**: A small dot marks the coordinates the card is centred on — your Home Assistant location, or the configured override.
 *   **Official Colours**: Uses the MeteoSwiss precipitation palette (0.2 → 60 mm/h), so the card matches what the MeteoSwiss app shows.
-*   **Base Map Layers**: Switch between swisstopo grey, colour and aerial, OpenStreetMap, and a dark map — from a control on the map itself. No API keys.
+*   **Base Map Layers**: Switch between swisstopo grey, colour and aerial, and a dark map — from a control on the map itself. No API keys.
 *   **Interactive Controls**:
     *   **Time Slider**: Drag to scrub through radar history and forecast.
     *   **Play/Pause**: Animate the precipitation progression.
@@ -82,10 +82,11 @@ basemap: dark
 | `swisstopo-grey` | swisstopo Grey (default) | swisstopo | 19 |
 | `swisstopo-color` | swisstopo Colour | swisstopo | 19 |
 | `swisstopo-aerial` | swisstopo Aerial | swisstopo (SWISSIMAGE) | 20 |
-| `osm` | OpenStreetMap | OpenStreetMap contributors | 19 |
 | `dark` | Dark | Esri World Dark Gray Canvas | 20 |
 
 Every layer works without an API key or registration, which is deliberate — CARTO, the card's previous base map, started watermarking its keyless tiles. Beyond the zoom in the last column the map keeps zooming and simply scales the last real tile, so detail stops improving but nothing goes blank. The grey veil over non-Swiss areas automatically darkens on the aerial and dark layers.
+
+**Why no OpenStreetMap layer?** It was offered briefly and withdrawn. OpenStreetMap's tile servers are volunteer-run and their [usage policy](https://operations.osmfoundation.org/policies/tiles/) does not cover an app like this one: bulk and app access is excluded, and callers are expected to identify themselves with a descriptive `User-Agent`, which a browser cannot set. In practice they block per IP, so the layer worked for some people and returned `403 Access blocked` tiles for others. A layer that fails for a subset of users is worse than no layer. The swisstopo Colour map covers the same need within Switzerland, which is all this card displays.
 
 A layer picked from the map control lasts for that dashboard session; reloading returns to the `basemap` in the config.
 
